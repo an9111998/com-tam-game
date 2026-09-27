@@ -7,9 +7,17 @@ lảng vảng ở két tiền.
 Chạy trên trình duyệt điện thoại, không cần mạng sau lần mở đầu, cài được lên
 màn hình chính như một app.
 
+**Chơi thử:** <https://com-tam.vercel.app>
+**Mã nguồn:** <https://github.com/an9111998/com-tam-game>
+
 ```bash
 node dev/serve.js 8190     # rồi mở http://localhost:8190
 ```
+
+> Vercel chưa nối với GitHub nên push **không** tự deploy. Muốn tự deploy thì
+> vào Vercel → Settings → Login Connections, nối GitHub một lần, rồi nối repo
+> vào project `com-tam`. Trước khi làm việc đó, mỗi lần deploy là một lần đẩy
+> file lên qua API.
 
 ---
 
