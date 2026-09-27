@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="color-scheme" content="only light">
+<meta name="theme-color" content="#fff6e8">
+<title>Tiệm Cơm Tấm</title>
+<meta name="description" content="Game mô phỏng quán cơm tấm: múc cơm, gắp món, chan mỡ hành và giữ khách quen giữa trời mưa nắng.">
+
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Cơm Tấm">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<meta property="og:title" content="Tiệm Cơm Tấm">
+<meta property="og:description" content="Múc cơm, gắp món, chan mỡ hành. Trời mưa hay nắng vẫn phải bán cho kịp.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="icons/icon-512.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app">
+  <header id="hd"></header>
+  <main id="view"></main>
+</div>
+
+<!-- Lớp thời tiết nằm ngoài .app để mưa nắng phủ toàn màn hình -->
+<div id="wx" aria-hidden="true"></div>
+
+<div id="modal" hidden><div class="card" id="card"></div></div>
+<div id="splash" hidden></div>
+<div id="toast" hidden></div>
+
+<script src="js/art.js"></script>
+<script src="js/data.js"></script>
+<script src="js/game.js"></script>
+
+<script>
+/* Đăng ký service worker để cài được lên màn hình chính và chơi offline.
+   Chỉ chạy trên http/https — mở bằng file:// thì bỏ qua, không báo lỗi.
+
+   Mở kèm ?nosw thì bỏ qua và dọn luôn bản đã đăng ký. Service worker
+   dùng stale-while-revalidate nên lúc đang sửa code nó trả file cũ,
+   khiến ta đi tìm lỗi ở chỗ không có lỗi. */
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  if (location.search.includes('nosw')) {
+    navigator.serviceWorker.getRegistrations()
+      .then(rs => rs.forEach(r => r.unregister()))
+      .catch(() => { });
+    if (window.caches) caches.keys().then(ks => ks.forEach(k => caches.delete(k))).catch(() => { });
+  } else {
+    addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => reg.update())
+        .catch(() => { });
+    });
+  }
+}
+</script>
+</body>
+</html>
