@@ -14,10 +14,8 @@ màn hình chính như một app.
 node dev/serve.js 8190     # rồi mở http://localhost:8190
 ```
 
-> Vercel chưa nối với GitHub nên push **không** tự deploy. Muốn tự deploy thì
-> vào Vercel → Settings → Login Connections, nối GitHub một lần, rồi nối repo
-> vào project `com-tam`. Trước khi làm việc đó, mỗi lần deploy là một lần đẩy
-> file lên qua API.
+> Project Vercel `com-tam` đã nối với repo này, nhánh production là `main`,
+> nên **push là tự deploy**. Không cần bước nào thêm.
 
 ---
 
