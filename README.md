@@ -312,6 +312,19 @@ làm người chơi kẹt bản cũ vĩnh viễn.
 **Từ chối cho vay không bị phạt nặng.** Nếu từ chối là mất khách thì đó không
 còn là lựa chọn.
 
+**Mở khoá món mới có cảnh báo vốn lưu động.** Tiền mở khoá và tiền nhập hàng
+rút từ cùng một két. Mở khoá xong không còn tiền nhập hàng là chết chắc, mà
+game thì không hề báo lỗi — nên phải nói thẳng con số ra trước khi người chơi bấm.
+
+**Bản mô phỏng phải chơi như người cẩn thận, không phải như người tiêu hết tiền.**
+`dev/sim.js` mở nhiều nhất một món và một trang bị mỗi ngày, luôn chừa gấp đôi
+tiền hàng hôm qua. Bản trước tiêu sạch nên báo phá sản, làm tưởng là số của
+game sai trong khi thật ra là cách chơi sai.
+
+**Co gọn riêng cho máy màn ngắn** (`@media (max-height: 780px)`): thẻ khách bỏ
+phần liệt kê món, nồi cơm và đĩa nhỏ lại. Mục tiêu duy nhất là nút "Đưa khách"
+luôn nằm trong tầm nhìn.
+
 ---
 
 ## 9. Bug đã gặp — coi như bài học
@@ -325,6 +338,9 @@ còn là lựa chọn.
 | `.coach b { display:flex }` làm mọi chữ in đậm trong câu hướng dẫn xuống dòng | Chữ vẫn đọc được, chỉ là vỡ dòng |
 | Lãi tụt dần rồi âm từ cấp 4: chi phí cố định tăng theo trang bị nhưng số phần bán được bị chặn bởi số bàn và giãn cách khách | Không có lỗi nào, chỉ thấy tiền vơi dần. Chính `dev/sim.js` bắt ra |
 | Service worker trả file js cũ trong lúc sửa code | Sửa xong tải lại vẫn thấy bản cũ, dễ đi tìm lỗi ở chỗ không có lỗi. Đã thêm `?nosw` |
+| `suggest()` — giá bán do **chính game** gợi ý theo chợ — có thể vượt trần chê đắt khi một món sốt giá riêng lẻ (chợ chung vẫn bình thường nên trần không nới theo). Bấm nút "Theo chợ" là tự tay làm 80% khách bỏ đi | Không có lỗi, không có cảnh báo, chỉ thấy khách vắng hẳn sau khi bấm một nút mà game khuyên bấm. Đã kẹp `suggest()` dưới `capOf()` và thêm phép thử trong `cfgSelfCheck()` |
+| Vòng xoáy phá sản: mở khoá món mới ngốn hết vốn nhập hàng, mà mở thêm món còn làm khách tản ra nhiều món hơn nên cùng số hàng lại hết lẻ tẻ. Ít hàng → ít khách → ít tiền → càng ít hàng, bốn ngày là dẹp quán | Mỗi bước đều hợp lý, không có lỗi nào. Chỉ `dev/sim.js` chạy nhiều lần mới lộ ra: `sold` tụt về 0 mà `lost` cũng 0 — dấu hiệu quán không có gì để bán, chứ không phải khách bỏ đi. Đã thêm cảnh báo khi mở khoá ăn vào vốn lưu động |
+| Nút "Đưa khách" trôi khỏi màn hình ở máy 375×667 | Ở khổ 430×900 vừa khít nên không thấy gì; máy nhỏ hơn thì phải cuộn mới bấm được thứ bấm nhiều nhất |
 
 ---
 

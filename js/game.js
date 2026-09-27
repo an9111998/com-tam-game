@@ -145,8 +145,14 @@ function mktIdx() {
 /* khách chịu giá cao hơn bao nhiêu khi chợ đắt */
 const priceTol = () => clamp(1 + .6 * (mktIdx() - 1), .92, 1.42);
 const capOf = () => Math.round(CFG.itemCap * priceTol());
-/* giá bán gợi ý theo chợ hôm nay — nút "Theo chợ" dùng đúng con số này */
-const suggest = k => r1000(DEF_SELL[k] * (1 + .85 * (mkt(k) - 1)));
+/* Giá bán gợi ý theo chợ hôm nay — nút "Theo chợ" dùng đúng con số này.
+   Phải chặn dưới trần chê đắt: giá do CHÍNH GAME gợi ý mà làm khách bỏ đi
+   thì người chơi không thể tránh được. Đã từng xảy ra khi một món sốt giá
+   riêng lẻ (chợ chung vẫn bình thường nên trần không nới theo). */
+const suggest = k => Math.min(
+  r1000(DEF_SELL[k] * (1 + .85 * (mkt(k) - 1))),
+  Math.floor(capOf() / 1000) * 1000
+);
 
 /* ---------- KINH TẾ ---------- */
 const sellMax = k => CFG.itemCap * 3;
@@ -643,6 +649,11 @@ function paneNo() {
           <b>${r.name.split(' ').slice(-1)[0]}</b><em>${Math.round(r.trust * 100)}%</em></div>`).join('')}</div>` : ''}`;
 }
 const dayInterest = () => Math.round(S.loans.reduce((a, l) => a + l.amt * l.rate / 100 / 360, 0));
+/* tiền hàng đã nhập của ngày gần nhất — thước đo vốn lưu động cần giữ */
+function lastIngSpend() {
+  const r = [...S.history].reverse().find(x => Object.keys(x.ing || {}).length);
+  return r ? Object.values(r.ing).reduce((a, v) => a + v, 0) : 0;
+}
 
 /* ---------- ĐÁNH GIÁ ---------- */
 function paneRev() {
@@ -742,9 +753,18 @@ function doBuy() {
 function unlockItem(k) {
   const c = ITEMS[k].unlock;
   if (S.money < c) { toast('Cần ' + fmt(c) + ' để mở ' + low(ITEMS[k].n)); vib(60); return }
+  /* Cảnh báo khi mở khoá ăn hết vốn nhập hàng. Mở nhiều món một lúc còn
+     làm khách tản ra nhiều món hơn, nên cùng số hàng lại dễ hết lẻ tẻ —
+     hai thứ cộng lại đủ làm sập cả tuần mà không hiện lỗi gì. */
+  const spent = lastIngSpend();
+  const left = S.money - c;
+  const tight = spent && left < spent * 1.6;
   ask(`<div class="pbig">${itemArt(k, 64)}</div><h2>Mở ${ITEMS[k].n}?</h2>
     <p>Tốn <b>${fmt(c)}</b> tiền học món và dụng cụ. Sau đó nhập hàng như mọi món khác,
-       giá nhập hôm nay ${fmt(buyCost(k))}.</p>`,
+       giá nhập hôm nay ${fmt(buyCost(k))}.</p>
+    ${tight ? `<p class="lvup warn">${ic('warn')} Mở xong chỉ còn <b>${fmt(left)}</b>, mà hôm qua
+      nhập hàng đã tốn <b>${fmt(spent)}</b>. Thiếu vốn nhập là hết món giữa buổi,
+      rồi hôm sau càng ít tiền nhập. Nên để dành thêm một, hai ngày.</p>` : ''}`,
     [['Thôi', null], ['Mở món', () => {
       S.money -= c; S.unlocked[k] = true;
       if (!S.sell[k]) S.sell[k] = suggest(k);

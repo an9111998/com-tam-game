@@ -435,6 +435,11 @@ function cfgSelfCheck() {
   const bad = [];
   Object.keys(DEF_SELL).forEach(k => {
     if (DEF_SELL[k] > CFG.itemCap) bad.push(`giá gợi ý ${k} (${DEF_SELL[k]}) vượt trần chê đắt itemCap (${CFG.itemCap})`);
+    /* Giá do game gợi ý theo chợ cũng không được vượt trần chê đắt —
+       nếu vượt thì bấm nút "Theo chợ" là tự tay làm 80% khách bỏ đi. */
+    if (typeof suggest === 'function' && suggest(k) > capOf()) {
+      bad.push(`giá theo chợ của ${k} (${suggest(k)}) vượt trần chê đắt hôm nay (${capOf()})`);
+    }
   });
   /* phần đắt nhất có thể gọi ở cấp 4: cơm nhiều + 3 món đắt nhất + canh + nước đắt nhất + mỡ hành */
   const top3 = MAIN_KEYS.map(k => DEF_SELL[k]).sort((a, b) => b - a).slice(0, 3).reduce((a, b) => a + b, 0);

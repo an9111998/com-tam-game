@@ -45,18 +45,24 @@
     doBuy();
   }
 
-  /* mua thêm món khi có tiền dư, theo thứ tự rẻ trước */
+  /* Mua thêm khi có tiền dư — nhưng phải giữ VỐN LƯU ĐỘNG.
+     Bản trước tiêu tới mức chỉ còn đủ nhập nửa ngày hàng, và mở luôn ba
+     món một lúc. Hai thứ đó cộng lại tạo ra vòng xoáy: ít hàng → ít
+     khách → ít tiền → càng ít hàng, vài ngày là dẹp quán. Người chơi
+     cẩn thận sẽ mở MỘT món mỗi ngày và luôn chừa tiền nhập hàng. */
   function invest() {
-    [...MAIN_KEYS, ...CANH_KEYS, ...DRINK_KEYS]
-      .filter(k => !S.unlocked[k]).sort((a, b) => ITEMS[a].unlock - ITEMS[b].unlock)
-      .forEach(k => {
-        if (S.money > ITEMS[k].unlock * 3) {
-          S.money -= ITEMS[k].unlock; S.unlocked[k] = true; S.sell[k] = suggest(k);
-        }
-      });
-    UPG.forEach(u => {
-      if (!S.upg[u.id] && S.money > u.cost * 4) { S.money -= u.cost; S.upg[u.id] = true }
-    });
+    const floor = Math.max(500000, lastIngSpend() * 2);
+    const canBuy = cost => S.money - cost > floor;
+    const next = [...MAIN_KEYS, ...CANH_KEYS, ...DRINK_KEYS]
+      .filter(k => !S.unlocked[k]).sort((a, b) => ITEMS[a].unlock - ITEMS[b].unlock)[0];
+    if (next && canBuy(ITEMS[next].unlock)) {
+      S.money -= ITEMS[next].unlock; S.unlocked[next] = true; S.sell[next] = suggest(next);
+    }
+    /* Trang bị: mỗi ngày nhiều nhất một thứ, và cũng phải chừa vốn nhập hàng.
+       "Kê thêm bàn" lên trước vì nó là thứ tăng doanh thu mạnh nhất. */
+    const upg = [UPG.find(u => u.id === 'ban4'), ...UPG.filter(u => u.id !== 'ban4')]
+      .find(u => !S.upg[u.id] && canBuy(u.cost) && S.money > u.cost * 3);
+    if (upg) { S.money -= upg.cost; S.upg[upg.id] = true }
     /* Nhân viên là gánh nặng lương mỗi ngày và trong bản mô phỏng họ
        KHÔNG giúp gì (sim tự làm tất cả tức thì), nên chỉ thuê khi quán
        đã lớn. Thuê sớm ở đây sẽ cho ra kết quả bi quan hơn thực tế. */
