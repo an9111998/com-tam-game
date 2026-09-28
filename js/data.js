@@ -392,7 +392,7 @@ const TOUR = [
 
 /* ---------- CẤU HÌNH ---------- */
 const SAVE = 'ctShop1', OWNER_SAVE = 'ctOwner';
-const GAME_VERSION = '1.0';
+const GAME_VERSION = '1.1';
 
 const DEFAULT_CONFIG = {
   ownerPin: '2468',

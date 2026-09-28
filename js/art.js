@@ -73,139 +73,354 @@ function ic(n, cls) {
 }
 
 /* ============================================================
-   HÌNH TỪNG MÓN — vẽ trong khung 40×40
+   HÌNH TỪNG MÓN — khung 40×40
+
+   Ba quy tắc rút ra sau lần vẽ đầu bị chê "món nào cũng như món nào":
+   1. DÁNG phải khác nhau trước đã. Người ta nhận ra món qua bóng dáng
+      chứ không qua màu. Sườn dẹt và rộng; đùi gà tròn và có xương; chả
+      hình rẻ quạt; bì là búi sợi. Bản đầu vẽ cái gì cũng là khối bo
+      tròn nâu nên sườn bị đọc thành đùi gà.
+   2. Mỗi món có ĐÚNG MỘT dấu hiệu nhận dạng, vẽ cho rõ: vệt cháy của
+      sườn, mặt trứng của chả, lớp da phồng của heo quay, vòng mực.
+   3. Có khối: chuyển màu từ sáng xuống tối, một vệt bóng, và bóng đổ
+      xuống mặt khay. Thiếu bóng đổ là hình dán chứ không phải đồ ăn.
+
+   Mã chuyển màu đặt tên theo khoá món (`suon-g`) vì id trong SVG dùng
+   chung toàn trang — trùng tên là hai món dùng nhầm màu của nhau.
    ============================================================ */
+
+/* bóng đổ dùng chung, đặt dưới mọi món */
+const shadow = (cx, cy, rx, o) =>
+  `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${(rx * .22).toFixed(1)}" fill="#7a5a38" opacity="${o || .16}"/>`;
+
+/* vệt bóng dầu vắt qua mặt món, thứ làm đồ ăn trông "ướt" */
+const gloss = (d, o) => `<path d="${d}" stroke="#fff" stroke-width="1.6" fill="none"
+  stroke-linecap="round" opacity="${o || .4}"/>`;
+
 const ITEM_ART = {
-  /* ---- món chính ---- */
-  suon: c => `
-    <path d="M7 22c-1-5 2-11 8-13 6-2 12 1 13 6 1 5-3 9-8 10-6 1-12-1-13-3z" fill="${c}" stroke="${shade(c, -.35)}" stroke-width="1.4"/>
-    <path d="M12 12c2 3 3 7 3 11M17 10c2 3 3 7 3 11M22 10c2 3 2 6 2 9" stroke="${shade(c, -.45)}" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-    <path d="M28 14c2-1 4 0 4 2s-2 3-4 2z" fill="#f4ead6" stroke="${shade(c, -.4)}" stroke-width="1.2"/>`,
-  bi: c => `
-    <ellipse cx="20" cy="24" rx="14" ry="9" fill="${shade(c, .3)}" stroke="${shade(c, -.25)}" stroke-width="1.2"/>
-    ${[0, 1, 2, 3, 4, 5].map(i => `<path d="M${8 + i * 2} ${26 - i} q6 -${4 + i} 14 -1" stroke="${shade(c, -.2)}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`).join('')}
-    <circle cx="14" cy="20" r="1.2" fill="#9a7a4e"/><circle cx="25" cy="22" r="1.2" fill="#9a7a4e"/>`,
-  cha: c => `
-    <path d="M6 26 14 10h14l6 16z" fill="${c}" stroke="${shade(c, -.35)}" stroke-width="1.4"/>
-    <path d="M8 22h24" stroke="${shade(c, -.3)}" stroke-width="1.3"/>
-    <path d="M13 12h14l3 8H10z" fill="#f6d258" stroke="${shade(c, -.3)}" stroke-width="1.1"/>
-    <circle cx="16" cy="24" r="1.3" fill="${shade(c, -.4)}"/><circle cx="24" cy="23" r="1.3" fill="${shade(c, -.4)}"/>`,
-  opla: c => `
-    <path d="M8 22c-2-6 3-12 9-12 7 0 8 4 12 5 4 1 5 6 1 9-5 4-20 4-22-2z" fill="#fffaf0" stroke="#e8d8b8" stroke-width="1.4"/>
-    <circle cx="19" cy="19" r="6" fill="${c}" stroke="${shade(c, -.3)}" stroke-width="1.2"/>
-    <ellipse cx="17" cy="17" rx="2" ry="1.4" fill="#fdf0a8"/>`,
-  heoquay: c => `
-    <path d="M6 16h28v12H6z" fill="${c}" stroke="${shade(c, -.35)}" stroke-width="1.4"/>
-    <path d="M6 22h28" stroke="${shade(c, -.25)}" stroke-width="1.2"/>
-    <path d="M6 16c0-3 2-4 6-4h16c4 0 6 1 6 4z" fill="#f3d9a6" stroke="${shade(c, -.35)}" stroke-width="1.3"/>
-    ${[9, 13, 17, 21, 25, 29].map(x => `<circle cx="${x}" cy="14.6" r="1" fill="${shade(c, -.2)}"/>`).join('')}
-    <path d="M8 26h24" stroke="#f0ddc0" stroke-width="1.6"/>`,
-  duiga: c => `
-    <path d="M12 10c7-3 14 1 15 8 1 6-4 11-10 10-6-1-9-6-8-11 .4-3 1.4-5.6 3-7z" fill="${c}" stroke="${shade(c, -.35)}" stroke-width="1.4"/>
-    <path d="M13 26c-3 3-5 5-6 7" stroke="#f2e6cf" stroke-width="4.4" stroke-linecap="round"/>
-    <path d="M13 26c-3 3-5 5-6 7" stroke="#d8c7a8" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-    <circle cx="7" cy="33" r="2.8" fill="#f6ecd8" stroke="#d8c7a8" stroke-width="1.1"/>
-    <path d="M18 14c3 1 5 3 6 6" stroke="${shade(c, -.45)}" stroke-width="1.4" fill="none" stroke-linecap="round"/>`,
-  rauxao: c => `
-    <path d="M6 28c4-10 12-16 22-18-2 10-8 17-17 19z" fill="${c}" stroke="${shade(c, -.35)}" stroke-width="1.3"/>
-    <path d="M10 27c6-7 11-11 17-14" stroke="${shade(c, -.4)}" stroke-width="1.3" fill="none"/>
-    <path d="M22 30c3-6 7-9 12-10-1 6-5 10-10 11z" fill="${shade(c, .2)}" stroke="${shade(c, -.3)}" stroke-width="1.2"/>
-    <circle cx="14" cy="14" r="2.4" fill="#e8b84e" stroke="#c99a30" stroke-width="1"/>`,
-  cachien: c => `
-    <path d="M6 20c5-7 14-9 20-5 3 2 5 4 6 5-1 1-3 3-6 5-6 4-15 2-20-5z" fill="${c}" stroke="${shade(c, -.35)}" stroke-width="1.4"/>
-    <path d="M32 20c2-3 4-4 4-4v8s-2-1-4-4z" fill="${shade(c, .15)}" stroke="${shade(c, -.3)}" stroke-width="1.2"/>
-    <circle cx="13" cy="18" r="1.7" fill="#4a3b32"/>
-    <path d="M18 14c2 4 2 8 0 12M23 15c2 3 2 7 0 10" stroke="${shade(c, -.35)}" stroke-width="1.2" fill="none"/>`,
-  baroi: c => `
-    <path d="M5 13h13c3 0 4 2 4 5s-1 5-4 5H5z" fill="${c}" stroke="${shade(c, -.3)}" stroke-width="1.3"/>
-    <path d="M5 16.4h17M5 19.8h17" stroke="#fff6ee" stroke-width="1.8"/>
-    <path d="M17 24h13c3 0 4 2 4 5s-1 5-4 5H17z" fill="${c}" stroke="${shade(c, -.3)}" stroke-width="1.3"/>
-    <path d="M17 27.4h17M17 30.8h17" stroke="#fff6ee" stroke-width="1.8"/>`,
-  mucxao: c => `
-    <circle cx="13" cy="15" r="6.4" fill="none" stroke="${shade(c, -.3)}" stroke-width="3.4"/>
-    <circle cx="26" cy="21" r="5.4" fill="none" stroke="${shade(c, -.3)}" stroke-width="3.2"/>
-    <path d="M8 27c4-2 8-1 11 2 2 2 4 3 6 3" stroke="${shade(c, -.35)}" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-    <path d="M30 10c2 1 3 3 3 5" stroke="#6fa35a" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-    <circle cx="20" cy="31" r="1.6" fill="#e8734f"/>`,
-  tomrim: c => `
-    <path d="M9 26c-3-5-1-11 5-13 5-2 10 1 11 6 1 4-1 7-4 8" fill="none" stroke="${c}" stroke-width="5.2" stroke-linecap="round"/>
-    <path d="M9 26c-3-5-1-11 5-13 5-2 10 1 11 6" fill="none" stroke="${shade(c, -.3)}" stroke-width="1.2"/>
-    <path d="M24 13c3-2 6-2 8 0-2 2-5 3-8 2z" fill="${shade(c, .2)}" stroke="${shade(c, -.25)}" stroke-width="1.1"/>
-    <circle cx="26" cy="11.6" r="1.2" fill="#4a3b32"/>
-    <path d="M12 30c2 2 5 3 8 2" stroke="${shade(c, -.2)}" stroke-width="1.4" fill="none" stroke-linecap="round"/>`,
-  bonuong: c => `
-    <path d="M5 14h14c3 0 4 2 4 4.4s-1 4.4-4 4.4H5z" fill="${c}" stroke="${shade(c, -.3)}" stroke-width="1.3"/>
-    <path d="M18 25h14c3 0 4 2 4 4.4S35 34 32 34H18z" fill="${c}" stroke="${shade(c, -.3)}" stroke-width="1.3"/>
-    <path d="M8 14v8.8M13 14v8.8M21 25v9M26 25v9" stroke="${shade(c, -.5)}" stroke-width="1.4"/>
-    <path d="M27 12c3 0 5 2 5 4" stroke="#6fa35a" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+  /* ---------- MÓN CHÍNH ---------- */
 
-  /* ---- canh ---- */
-  khoaimo: c => `
-    <path d="M5 17h30c0 8-6 13-15 13S5 25 5 17z" fill="#f6f0e4" stroke="#ddcdb4" stroke-width="1.4"/>
-    <path d="M7.4 19h25.2c-.6 6-5.4 9.4-12.6 9.4S8 25 7.4 19z" fill="${c}"/>
-    <ellipse cx="20" cy="19.4" rx="12" ry="2.6" fill="${shade(c, .18)}"/>
-    <path d="M14 12c0-2 2-2 2-4M20 11c0-2 2-2 2-4M26 12c0-2 2-2 2-4" stroke="#cfd8dd" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-    <circle cx="16" cy="20" r="1.5" fill="#6fa35a"/><circle cx="24" cy="21" r="1.5" fill="#6fa35a"/>`,
-  khoqua: c => `
-    <path d="M5 17h30c0 8-6 13-15 13S5 25 5 17z" fill="#f6f0e4" stroke="#ddcdb4" stroke-width="1.4"/>
-    <path d="M7.4 19h25.2c-.6 6-5.4 9.4-12.6 9.4S8 25 7.4 19z" fill="${shade(c, .55)}"/>
-    <circle cx="14" cy="21" r="3.6" fill="${c}" stroke="${shade(c, -.3)}" stroke-width="1.1"/>
-    <circle cx="14" cy="21" r="1.5" fill="#e8d9a8"/>
-    <circle cx="25" cy="22" r="3.2" fill="${c}" stroke="${shade(c, -.3)}" stroke-width="1.1"/>
-    <circle cx="25" cy="22" r="1.3" fill="#e8d9a8"/>
-    <path d="M17 12c0-2 2-2 2-4M24 12c0-2 2-2 2-4" stroke="#cfd8dd" stroke-width="1.6" fill="none" stroke-linecap="round"/>`,
+  /* Sườn cốt lết: DẸT, RỘNG, không xương. Chính cục xương ở bản trước
+     làm nó bị nhìn thành đùi gà. Vệt cháy chéo + viền mỡ xăn. */
+  suon: () => `
+    <defs>
+      <linearGradient id="suon-g" x1=".2" y1="0" x2=".7" y2="1">
+        <stop offset="0" stop-color="#dd9247"/><stop offset=".5" stop-color="#b3652b"/>
+        <stop offset="1" stop-color="#83441a"/>
+      </linearGradient>
+    </defs>
+    ${shadow(20, 30.5, 14)}
+    <path d="M6.2 19.4c-.6-5.2 3-9.8 8.8-10.9 5.2-1 9.4.5 12.5 3.1 3.6 3 5.6 6.7 4.5 9.8-1.1 3.6-5.2 5.7-10.4 6.2-6.2.6-11.4-1.5-14-4.6-.9-1.1-1.3-2.3-1.4-3.6z"
+      fill="url(#suon-g)" stroke="#68360f" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M6.4 21c2.1 2.6 6.2 4.2 11.4 4 5.2-.2 9.3-1.9 11.8-4.4-.2 3.1-4.4 5.6-9.8 6.1-6.2.6-11.4-1.5-13.4-5.7z"
+      fill="#5c2f0d" opacity=".32"/>
+    <path d="M11.6 9.6c1.1 4.2 1.7 9.3 1.3 15.1M18.4 8.7c.4 4.8.4 10.4-.4 16.2M24.9 10.8c-.6 4.4-1 9.3-1.4 13.7"
+      stroke="#4f2708" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".8"/>
+    <path d="M27.6 11.4c2.8 1.5 4.4 3.6 4.8 5.7.4 2.1-.4 3.8-1.7 5 .4-3.6-.9-7.4-3.1-10.7z"
+      fill="#eec08a" stroke="#83441a" stroke-width=".9"/>
+    ${gloss('M9 15.6c3-3.6 8.2-5.4 13.8-4.8', .45)}`,
 
-  /* ---- nước ---- */
-  trada: c => `
-    <path d="M11 9h18l-2.4 26h-13.2z" fill="#eef6fa" stroke="#c6d8e2" stroke-width="1.4"/>
-    <path d="M12.4 15h15.2l-2 18h-11.2z" fill="${c}" opacity=".85"/>
-    <rect x="14.6" y="17" width="5.4" height="5.4" rx="1" fill="#fff" opacity=".7"/>
-    <rect x="21" y="23" width="5" height="5" rx="1" fill="#fff" opacity=".6"/>
-    <path d="M26 6 23 14" stroke="#ef8fa0" stroke-width="2.4" stroke-linecap="round"/>`,
-  nuocsuoi: c => `
-    <path d="M16 5h8v4l2 3v22a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2V12l2-3z" fill="#eef7fb" stroke="#bdd6e4" stroke-width="1.4"/>
-    <path d="M15 17h10v14H15z" fill="${c}" opacity=".7"/>
-    <rect x="15.4" y="4" width="9.2" height="3.4" rx="1.2" fill="#6fa8cc"/>
-    <path d="M18 20v7" stroke="#fff" stroke-width="1.4" opacity=".8"/>`,
-  tratac: c => `
-    <path d="M11 9h18l-2.4 26h-13.2z" fill="#eef6fa" stroke="#c6d8e2" stroke-width="1.4"/>
-    <path d="M12.4 14h15.2l-2 19h-11.2z" fill="${c}" opacity=".9"/>
-    <circle cx="17" cy="22" r="3.2" fill="#f7c948" stroke="#d8a42c" stroke-width="1"/>
-    <path d="M17 18.8v6.4M13.8 22h6.4" stroke="#fff3c8" stroke-width="1"/>
-    <rect x="21" y="26" width="4.4" height="4.4" rx="1" fill="#fff" opacity=".6"/>
-    <path d="M26 6 23 14" stroke="#7fb86a" stroke-width="2.4" stroke-linecap="round"/>`,
-  trachanh: c => `
-    <path d="M11 9h18l-2.4 26h-13.2z" fill="#eef6fa" stroke="#c6d8e2" stroke-width="1.4"/>
-    <path d="M12.4 14h15.2l-2 19h-11.2z" fill="${c}" opacity=".8"/>
-    <path d="M14 20a4.6 4.6 0 0 1 9.2 0z" fill="#e8f08e" stroke="#bcc84e" stroke-width="1"/>
-    <path d="M18.6 20v-4.4M15 18l3.6 2M22.2 18l-3.6 2" stroke="#f6fbd0" stroke-width=".9"/>
-    <path d="M25 24c2-1 3 0 3 2s-2 3-3 2" fill="#6fa35a"/>
-    <path d="M26 6 23 14" stroke="#7fb86a" stroke-width="2.4" stroke-linecap="round"/>`,
+  /* Bì: búi sợi thật, nhiều sợi mảnh chồng nhau + hạt thính rang. */
+  bi: () => `
+    <defs><linearGradient id="bi-g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7ebc8"/><stop offset="1" stop-color="#d7ba7e"/></linearGradient></defs>
+    ${shadow(20, 29.5, 13)}
+    <path d="M7.2 24.6c0-4.8 5.9-8.8 12.8-8.8s12.8 4 12.8 8.8c0 3-5.9 5-12.8 5S7.2 27.6 7.2 24.6z" fill="url(#bi-g)"/>
+    ${Array.from({ length: 15 }, (_, i) => {
+    const y = 14.6 + (i % 8) * 1.75, x0 = 6.6 + (i % 3) * 2.4, w = 19 + (i % 4) * 3.4;
+    const c = ['#c39c58', '#efdfb6', '#dcc389', '#cfae6e'][i % 4];
+    return `<path d="M${x0} ${(y + 5).toFixed(1)} q${(w / 2).toFixed(1)} -${4 + (i % 3)} ${w} ${(i % 2) ? 1.2 : -1.2}"
+        stroke="${c}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`;
+  }).join('')}
+    ${[[12, 21], [19.4, 18.8], [26, 22], [16, 25], [24, 25.6], [21, 23]].map(([x, y]) =>
+    `<circle cx="${x}" cy="${y}" r=".95" fill="#936c37"/>`).join('')}`,
 
-  /* ---- phụ + cơm + dụng cụ ---- */
-  mohanh: c => `
-    <path d="M7 18h26c0 6-5 10-13 10S7 24 7 18z" fill="#f6f0e4" stroke="#ddcdb4" stroke-width="1.4"/>
-    <path d="M9 19.6h22c-.6 4.6-4.6 7-11 7s-10.4-2.4-11-7z" fill="#f6dc9a"/>
-    ${[[13, 21], [18, 23], [23, 21.4], [27, 23], [16, 24.6], [21, 25.4]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="2.2" ry="1.1" fill="${c}" transform="rotate(${(x * 7) % 60 - 30} ${x} ${y})"/>`).join('')}
-    <path d="M14 14c0-2 2-2 2-4M24 14c0-2 2-2 2-4" stroke="#cfd8dd" stroke-width="1.5" fill="none" stroke-linecap="round"/>`,
+  /* Chả trứng: rẻ quạt, mặt trứng bóng vàng ở trên, thân có mộc nhĩ đen
+     và miến trong — ba dấu hiệu để nhận ra ngay. */
+  cha: () => `
+    <defs>
+      <linearGradient id="cha-g" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#eaba58"/><stop offset="1" stop-color="#c3852c"/></linearGradient>
+      <linearGradient id="cha-t" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#ffdd67"/><stop offset="1" stop-color="#efb638"/></linearGradient>
+    </defs>
+    ${shadow(20, 29.5, 12)}
+    <path d="M8.6 27.4 14.4 11.4h11.2l5.8 16z" fill="url(#cha-g)" stroke="#8c5a1a" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M14.4 11.4h11.2l1.7 4.6H12.7z" fill="url(#cha-t)" stroke="#8c5a1a" stroke-width="1"/>
+    <path d="M13.2 17.3h13.6" stroke="#a5701f" stroke-width=".8" opacity=".55"/>
+    ${[[15, 21], [23.4, 20], [19, 24.2], [26, 24], [12.6, 25]].map(([x, y], i) =>
+    `<ellipse cx="${x}" cy="${y}" rx="${(1.7 + (i % 2) * .5).toFixed(1)}" ry="1.15" fill="#3f2c1c"
+        opacity=".82" transform="rotate(${i * 34 - 40} ${x} ${y})"/>`).join('')}
+    ${[[18, 18.4], [25, 22], [14, 23]].map(([x, y]) =>
+    `<ellipse cx="${x}" cy="${y}" rx="1.5" ry=".85" fill="#f6e7c2" opacity=".75"/>`).join('')}
+    ${gloss('M15.2 13h9.6', .65)}`,
+
+  /* Trứng ốp la: lòng trắng méo tự nhiên, viền rán vàng giòn, lòng đỏ
+     nổi khối có chấm sáng. */
+  opla: () => `
+    <defs>
+      <radialGradient id="opla-y" cx=".36" cy=".32" r=".72">
+        <stop offset="0" stop-color="#ffd85c"/><stop offset=".65" stop-color="#f7b92c"/><stop offset="1" stop-color="#dd9412"/>
+      </radialGradient>
+    </defs>
+    ${shadow(20, 28.5, 14)}
+    <path d="M7.4 21.6c-2.2-6.2 2.6-12.4 9.2-12.6 4.4-.1 6.2 2.2 10 3.1 4.6 1.1 6.6 6.4 2.4 9.9-2.6 2.2-6.4 3-10.4 3-4.8 0-9.6-.8-11.2-3.4z"
+      fill="#fffdf6" stroke="#e8d09a" stroke-width="1.2"/>
+    <path d="M8.8 22.8c2.4 2 7 2.8 11.4 2.6 4-.2 7.6-1.2 9.6-3-1 2.6-5 4.4-10.6 4.4-5 0-8.8-1.4-10.4-4z"
+      fill="#f3e2ba" opacity=".7"/>
+    <circle cx="19.2" cy="18.4" r="6.4" fill="url(#opla-y)" stroke="#cf8a10" stroke-width="1"/>
+    <ellipse cx="16.8" cy="16" rx="2.2" ry="1.5" fill="#fff3ae" opacity=".85"/>
+    ${gloss('M10.4 15.2c2-3 5-4.6 8.4-4.8', .5)}`,
+
+  /* Heo quay: khối vuông ba lớp — da phồng rộp ở trên, mỡ trắng, thịt
+     hồng. Lớp da rỗ là dấu hiệu không lẫn với món nào. */
+  heoquay: () => `
+    <defs>
+      <linearGradient id="hq-skin" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#f6c977"/><stop offset="1" stop-color="#d79a3c"/></linearGradient>
+      <linearGradient id="hq-meat" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#d59074"/><stop offset="1" stop-color="#a45f45"/></linearGradient>
+    </defs>
+    ${shadow(20, 30, 13)}
+    <path d="M7 15.6h26v9.2c0 2-1 3.4-3 3.4H10c-2 0-3-1.4-3-3.4z" fill="url(#hq-meat)" stroke="#7d422c" stroke-width="1.1"/>
+    <rect x="7" y="15.6" width="26" height="3.4" fill="#f7ece0" opacity=".92"/>
+    <path d="M7 15.6c0-3.4 2-5 6.6-5h12.8c4.6 0 6.6 1.6 6.6 5z" fill="url(#hq-skin)" stroke="#a9701e" stroke-width="1.1"/>
+    ${[9.6, 13, 16.4, 19.8, 23.2, 26.6, 30].map((x, i) =>
+    `<circle cx="${x}" cy="${12.8 + (i % 2) * 1.1}" r="${.85 + (i % 3) * .2}" fill="#b4791f" opacity=".75"/>`).join('')}
+    <path d="M12.4 19v9.2M20 19v9.2M27.6 19v9.2" stroke="#8a4e35" stroke-width=".8" opacity=".5"/>
+    ${gloss('M10 12.4c4-1.6 9-2 13-1.4', .55)}`,
+
+  /* Đùi gà: TRÒN, có xương lòi ra — giờ xương là dấu hiệu riêng của nó,
+     không còn đụng với sườn nữa. */
+  duiga: () => `
+    <defs><radialGradient id="dg-g" cx=".36" cy=".3" r=".78">
+      <stop offset="0" stop-color="#e3a95c"/><stop offset=".6" stop-color="#bd7c31"/><stop offset="1" stop-color="#8d531b"/>
+    </radialGradient></defs>
+    ${shadow(22, 30.5, 12)}
+    <path d="M13.2 28.8c-4.2-2.1-5.8-7.2-3.7-11.9C11.9 11.8 17.2 8.4 22.8 8.8c6.2.4 10.1 4.8 10.1 10.3 0 5.8-4.8 10.3-11 10.5-3.5.1-6.3-.2-8.7-.8z"
+      fill="url(#dg-g)" stroke="#71400f" stroke-width="1.2"/>
+    <path d="M12.8 28.4c-2.7 2.1-4.6 3.7-5.6 5.2" stroke="#f8efdd" stroke-width="4.8" stroke-linecap="round"/>
+    <path d="M12.8 28.4c-2.7 2.1-4.6 3.7-5.6 5.2" stroke="#cdb995" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <circle cx="6.4" cy="34.2" r="3" fill="#fdf7ea" stroke="#cdb995" stroke-width="1"/>
+    ${[[20, 16.6], [26.4, 20.6], [17.4, 22.6], [24, 25.8], [21.6, 20]].map(([x, y], i) =>
+    `<ellipse cx="${x}" cy="${y}" rx="1.6" ry="1.05" fill="#66380c" opacity=".42" transform="rotate(${i * 38} ${x} ${y})"/>`).join('')}
+    ${gloss('M17.6 12.6c4-1.4 8 .4 9.8 4', .45)}`,
+
+  /* Rau xào: mấy cọng rau muống còn nguyên cọng và lá, bóng dầu, có
+     lát tỏi. Dáng dài và mảnh, không lẫn với khối thịt. */
+  rauxao: () => `
+    ${shadow(20, 29.5, 13)}
+    <path d="M6.6 26.4c3.4-7.6 9.4-13 17.4-16.2-1 8.4-6 15.2-13.4 18z" fill="#4f8f3c" stroke="#33682a" stroke-width="1"/>
+    <path d="M10.6 25.6c4.4-6.2 9-10.4 14.2-13.4" stroke="#3d7a2e" stroke-width="1.1" fill="none"/>
+    <path d="M20.4 28.6c2.6-6.4 7-10.4 13-12-1.2 6.8-5.6 11.4-11.4 12.8z" fill="#6aa94f" stroke="#3d7a2e" stroke-width="1"/>
+    <path d="M23.6 27.6c3-4.4 6.2-7.2 9.4-8.6" stroke="#4f8f3c" stroke-width="1" fill="none"/>
+    <path d="M7.6 28.4c5-1 10-1.2 15.4-.4" stroke="#7cbb5c" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    ${[[14.6, 15.4], [24.4, 21], [11, 22.6]].map(([x, y], i) =>
+    `<ellipse cx="${x}" cy="${y}" rx="2.3" ry="1.5" fill="#f4e4bd" stroke="#cfae6e" stroke-width=".8"
+        transform="rotate(${i * 42 - 25} ${x} ${y})"/>`).join('')}
+    ${gloss('M11 22c3.4-4.6 7-8 11-10.2', .3)}`,
+
+  /* Cá chiên: con cá nguyên, vảy vàng giòn, có mắt, vây và đuôi xoè. */
+  cachien: () => `
+    <defs><linearGradient id="ca-g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e8bf7e"/><stop offset="1" stop-color="#b98a45"/></linearGradient></defs>
+    ${shadow(19, 29, 13)}
+    <path d="M30.6 19.8c2.4-3 5-4.4 5-4.4v9.4s-2.6-1.6-5-4.2z" fill="#dfae6d" stroke="#8d6428" stroke-width="1"/>
+    <path d="M5.4 19.8c4.6-6.8 13.4-9 20-5.2 3.2 1.9 5.2 3.9 6.2 5.2-1 1.3-3 3.3-6.2 5.2-6.6 3.8-15.4 1.6-20-5.2z"
+      fill="url(#ca-g)" stroke="#8d6428" stroke-width="1.2"/>
+    <path d="M16.6 13.4c1.6 3.8 1.6 8.8 0 12.8M21.8 14.6c1.4 3.2 1.4 7 0 10.2" stroke="#9a6d2c" stroke-width="1" fill="none" opacity=".8"/>
+    <path d="M13.6 12.6c2 .4 3.6 1.4 4.6 2.6-2 .2-3.8-.6-4.6-2.6zM13.6 27c2-.4 3.6-1.4 4.6-2.6-2-.2-3.8.6-4.6 2.6z" fill="#d3a15c"/>
+    <circle cx="10.6" cy="18.2" r="2" fill="#fffdf6"/><circle cx="10.6" cy="18.2" r="1.05" fill="#3a2a18"/>
+    <path d="M7.4 21.6c1.4 1.2 3 1.8 4.6 2" stroke="#8d6428" stroke-width=".9" fill="none"/>
+    ${gloss('M12 15c4-2.4 9-2.6 13 .2', .4)}`,
+
+  /* Ba rọi: ba lát nằm chồng, mỗi lát thấy rõ lớp mỡ trắng xen thịt. */
+  baroi: () => `
+    <defs><linearGradient id="br-g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e2a48a"/><stop offset="1" stop-color="#b97158"/></linearGradient></defs>
+    ${shadow(20, 30, 13)}
+    ${[[5.6, 11.4, 22], [8.4, 17.6, 23], [6.6, 23.8, 25]].map(([x, y, w], i) => `
+      <g>
+        <rect x="${x}" y="${y}" width="${w}" height="6.2" rx="3.1" fill="url(#br-g)" stroke="#8a4a35" stroke-width="1"/>
+        <rect x="${x + 1}" y="${y + 1.5}" width="${w - 2}" height="1.3" rx=".65" fill="#fdf1e6" opacity=".92"/>
+        <rect x="${x + 1}" y="${y + 3.6}" width="${w - 2}" height="1.1" rx=".55" fill="#fdf1e6" opacity=".78"/>
+      </g>`).join('')}
+    ${gloss('M8 13.4h16', .35)}`,
+
+  /* Tôm rim: hai con tôm cong, có râu, đuôi xoè, thân đỏ bóng nước rim. */
+  tomrim: () => `
+    <defs><linearGradient id="tom-g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f5875c"/><stop offset="1" stop-color="#cf4f2c"/></linearGradient></defs>
+    ${shadow(20, 30, 13)}
+    ${[[0, 0, 1], [13, 7, .82]].map(([dx, dy, s]) => `
+      <g transform="translate(${dx} ${dy}) scale(${s})">
+        <path d="M8.6 24.6c-3.4-5-1.6-11.6 4.4-13.8 5-1.8 9.8.6 11.2 5.2" fill="none" stroke="url(#tom-g)" stroke-width="5.6" stroke-linecap="round"/>
+        <path d="M8.6 24.6c-3.4-5-1.6-11.6 4.4-13.8 5-1.8 9.8.6 11.2 5.2" fill="none" stroke="#a63a1c" stroke-width="1" opacity=".55"/>
+        <path d="M23.4 13.4c2.8-1.8 5.6-1.6 7.4.4-2 1.8-4.8 2.6-7.6 1.6z" fill="#f2a77c" stroke="#a63a1c" stroke-width=".8"/>
+        <circle cx="24.6" cy="11.4" r="1.1" fill="#3a2118"/>
+        <path d="M25.6 9.4c2.4-1.6 4.6-2 6.4-1.6M25.2 8.6c1.6-2 3.4-3 5-3.2" stroke="#c8623c" stroke-width=".8" fill="none" stroke-linecap="round"/>
+        <path d="M10.4 26.6c1.6 1.8 3.6 2.6 5.8 2.4" stroke="#d9633c" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      </g>`).join('')}`,
+
+  /* Mực xào: vòng mực trắng ngà xen ớt chuông và hành lá — vòng tròn
+     rỗng là dấu hiệu riêng, không món nào khác có. */
+  mucxao: () => `
+    ${shadow(20, 29.5, 13)}
+    ${[[12.6, 16.4, 6.2], [25.4, 21.4, 5.2], [17.4, 25, 4.4]].map(([cx, cy, r]) => `
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#efe4d6" stroke-width="3.4"/>
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#c9b9a4" stroke-width="1"/>
+      <circle cx="${cx}" cy="${cy}" r="${r - 1.7}" fill="none" stroke="#d8cab4" stroke-width=".7"/>`).join('')}
+    <path d="M6.6 22.6c3-1.4 5.8-.6 8 1.8" stroke="#e4d7c4" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+    <path d="M28.6 11.4c2.2.8 3.6 2.4 4 4.6" stroke="#5f9c46" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <path d="M8.4 12.6c2 .4 3.4 1.6 4.2 3.4" stroke="#e05a3c" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    ${[[31, 25], [9.4, 27.4]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="2.2" ry="1.3" fill="#e05a3c" opacity=".9"/>`).join('')}
+    ${gloss('M9.4 13.6c2.6 1 4.4 2.6 5.4 4.6', .35)}`,
+
+  /* Bò nướng: lát mỏng cháy cạnh, giữa còn hồng, rắc mè. */
+  bonuong: () => `
+    <defs><linearGradient id="bo-g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8f5136"/><stop offset=".5" stop-color="#6b3421"/><stop offset="1" stop-color="#492015"/>
+    </linearGradient></defs>
+    ${shadow(20, 30, 13)}
+    ${[[6, 12.4, 23, -6], [9.4, 19, 22, 4], [7, 25.2, 24, -3]].map(([x, y, w, rot], i) => `
+      <g transform="rotate(${rot} ${x + w / 2} ${y + 3})">
+        <rect x="${x}" y="${y}" width="${w}" height="6" rx="3" fill="url(#bo-g)" stroke="#33150c" stroke-width="1"/>
+        <rect x="${x + 3}" y="${y + 2.2}" width="${w - 6}" height="1.8" rx=".9" fill="#c4705a" opacity=".55"/>
+        <path d="M${x + 5} ${y}v6M${x + 11} ${y}v6M${x + 17} ${y}v6" stroke="#2a1009" stroke-width="1.2" opacity=".55"/>
+      </g>`).join('')}
+    ${[[13, 15], [22, 21], [16, 27], [26, 17]].map(([x, y]) =>
+    `<ellipse cx="${x}" cy="${y}" rx="1" ry=".62" fill="#f7eedb" opacity=".85"/>`).join('')}
+    <path d="M28.6 9.6c2.2.6 3.6 2 4 4" stroke="#5f9c46" stroke-width="2.2" fill="none" stroke-linecap="round"/>`,
+
+  /* ---------- CANH ---------- */
+
+  /* Tô canh khoai mỡ: nước tím đặc, có vụn khoai và hành lá, khói bay. */
+  khoaimo: () => `
+    <defs><linearGradient id="km-g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a985cc"/><stop offset="1" stop-color="#7b5aa3"/></linearGradient></defs>
+    ${shadow(20, 31, 13)}
+    <path d="M9 8.6c0-1.6 1.6-1.6 1.6-3.4M16 7.6c0-1.6 1.6-1.6 1.6-3.4M23 8.6c0-1.6 1.6-1.6 1.6-3.4"
+      stroke="#cdd8de" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".85"/>
+    <path d="M4.6 15.6h30.8c0 8.4-6.2 13.6-15.4 13.6S4.6 24 4.6 15.6z" fill="#fdf8ee" stroke="#d9c6a8" stroke-width="1.3"/>
+    <ellipse cx="20" cy="15.8" rx="15.4" ry="3.6" fill="#ece0cd"/>
+    <ellipse cx="20" cy="16" rx="13.4" ry="3" fill="url(#km-g)"/>
+    <path d="M7.2 17.4c1.8 5 6.4 8 12.8 8s11-3 12.8-8c-.8 6.6-6 10.6-12.8 10.6S8 24 7.2 17.4z" fill="url(#km-g)"/>
+    ${[[14.6, 15.4], [24, 16.4], [19, 14.8]].map(([x, y]) =>
+    `<ellipse cx="${x}" cy="${y}" rx="1.9" ry="1" fill="#67a04c"/>`).join('')}
+    <ellipse cx="14.6" cy="14.6" rx="3.4" ry="1.4" fill="#fff" opacity=".22"/>`,
+
+  /* Tô canh khổ qua: lát khổ qua có vòng ruột và răng cưa bên ngoài. */
+  khoqua: () => `
+    ${shadow(20, 31, 13)}
+    <path d="M11 8.2c0-1.6 1.6-1.6 1.6-3.4M20 7.4c0-1.6 1.6-1.6 1.6-3.4M28 8.6c0-1.6 1.6-1.6 1.6-3.4"
+      stroke="#cdd8de" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".85"/>
+    <path d="M4.6 15.6h30.8c0 8.4-6.2 13.6-15.4 13.6S4.6 24 4.6 15.6z" fill="#fdf8ee" stroke="#d9c6a8" stroke-width="1.3"/>
+    <ellipse cx="20" cy="15.8" rx="15.4" ry="3.6" fill="#ece0cd"/>
+    <ellipse cx="20" cy="16" rx="13.4" ry="3" fill="#cfe0b4"/>
+    <path d="M7.2 17.4c1.8 5 6.4 8 12.8 8s11-3 12.8-8c-.8 6.6-6 10.6-12.8 10.6S8 24 7.2 17.4z" fill="#cfe0b4"/>
+    ${[[14.2, 16.4, 4], [25, 17.4, 3.4]].map(([cx, cy, r]) => `
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="#79a94e" stroke="#4f7d30" stroke-width="1"/>
+      <circle cx="${cx}" cy="${cy}" r="${r - 1.5}" fill="#e9dfa8"/>
+      ${[0, 1, 2, 3, 4, 5].map(i => {
+      const a = i * Math.PI / 3, x2 = (cx + Math.cos(a) * r).toFixed(1), y2 = (cy + Math.sin(a) * r).toFixed(1);
+      return `<circle cx="${x2}" cy="${y2}" r=".8" fill="#5f8f3c"/>`;
+    }).join('')}`).join('')}
+    <ellipse cx="14" cy="14.4" rx="3" ry="1.2" fill="#fff" opacity=".25"/>`,
+
+  /* ---------- NƯỚC ---------- */
+
+  trada: () => `
+    <defs><linearGradient id="td-g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d4a469"/><stop offset="1" stop-color="#a46f36"/></linearGradient></defs>
+    ${shadow(20, 36.5, 9, .13)}
+    <path d="M26.4 5.4 22.6 15" stroke="#ef8fa0" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M10.6 8.4h18.8l-2.6 27.2H13.2z" fill="#eef7fb" stroke="#bdd7e4" stroke-width="1.3"/>
+    <path d="M12.2 14.6h15.6l-2.1 19.4H14.3z" fill="url(#td-g)" opacity=".9"/>
+    ${[[14.6, 16.6, 5.6, -8], [20.6, 22.6, 5, 12], [15.4, 27.4, 4.6, 6]].map(([x, y, s, r]) =>
+    `<rect x="${x}" y="${y}" width="${s}" height="${s}" rx="1.1" fill="#fff" opacity=".62" transform="rotate(${r} ${x + s / 2} ${y + s / 2})"/>`).join('')}
+    <path d="M12.6 10.4h14.8" stroke="#fff" stroke-width="1.4" opacity=".75"/>
+    ${gloss('M14.4 17.6 13.4 31', .35)}`,
+
+  nuocsuoi: () => `
+    ${shadow(20, 36.5, 8, .13)}
+    <path d="M16.4 4.4h7.2v3.8l2 3v22.6a2 2 0 0 1-2 2h-7.2a2 2 0 0 1-2-2V11.2l2-3z"
+      fill="#eef8fc" stroke="#b7d4e4" stroke-width="1.3"/>
+    <path d="M15 16.4h10v17.6H15z" fill="#a8d5ec" opacity=".75"/>
+    <rect x="15.6" y="3.2" width="8.8" height="3.6" rx="1.4" fill="#5f9dc4"/>
+    <rect x="14.8" y="19" width="10.4" height="7" rx="1.2" fill="#fff" opacity=".92"/>
+    <path d="M16.4 21h7.2M16.4 23h5.4" stroke="#7fb6d4" stroke-width="1.1" stroke-linecap="round"/>
+    ${gloss('M17.6 12 17 32', .55)}`,
+
+  tratac: () => `
+    ${shadow(20, 36.5, 9, .13)}
+    <path d="M26.4 5.4 22.6 15" stroke="#7cb86a" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M10.6 8.4h18.8l-2.6 27.2H13.2z" fill="#eef7fb" stroke="#bdd7e4" stroke-width="1.3"/>
+    <path d="M12.2 13.6h15.6l-2.1 20.4H14.3z" fill="#eda63c" opacity=".92"/>
+    <circle cx="17.4" cy="22.4" r="3.6" fill="#f9cf50" stroke="#d8a422" stroke-width="1"/>
+    <path d="M17.4 18.8v7.2M13.8 22.4h7.2M14.9 19.9l5 5M19.9 19.9l-5 5" stroke="#fff3c8" stroke-width=".85"/>
+    <rect x="21.4" y="26.4" width="4.6" height="4.6" rx="1.1" fill="#fff" opacity=".55"/>
+    ${gloss('M14.2 16.4 13.4 30', .35)}`,
+
+  trachanh: () => `
+    ${shadow(20, 36.5, 9, .13)}
+    <path d="M26.4 5.4 22.6 15" stroke="#7cb86a" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M10.6 8.4h18.8l-2.6 27.2H13.2z" fill="#eef7fb" stroke="#bdd7e4" stroke-width="1.3"/>
+    <path d="M12.2 13.6h15.6l-2.1 20.4H14.3z" fill="#dce86a" opacity=".85"/>
+    <path d="M13.6 21.6a5.2 5.2 0 0 1 10.4 0z" fill="#ecf5a0" stroke="#b9c94e" stroke-width="1"/>
+    <path d="M18.8 21.6v-5.2M14.6 19.2l4.2 2.4M23 19.2l-4.2 2.4" stroke="#f8fcd8" stroke-width=".9"/>
+    <path d="M24.6 25.4c2.4-1.2 3.8 0 3.6 2.2-.2 2.2-2.4 3-3.6 2z" fill="#5f9c46"/>
+    <path d="M25 25.8c.6 1.4.6 2.6 0 3.8" stroke="#3f7530" stroke-width=".8" fill="none"/>
+    ${gloss('M14.2 16.4 13.4 30', .35)}`,
+
+  /* ---------- CƠM, MỠ HÀNH, DỤNG CỤ ---------- */
+
+  /* Chén mỡ hành: dầu vàng sóng sánh, hành lá xanh nổi lên, có bóng. */
+  mohanh: () => `
+    ${shadow(20, 29.5, 12)}
+    <path d="M6.4 16.4h27.2c0 6.6-5.4 10.8-13.6 10.8S6.4 23 6.4 16.4z" fill="#fdf8ee" stroke="#d9c6a8" stroke-width="1.3"/>
+    <ellipse cx="20" cy="16.6" rx="13.6" ry="3.2" fill="#ece0cd"/>
+    <ellipse cx="20" cy="16.8" rx="11.8" ry="2.7" fill="#f4d67f"/>
+    <path d="M8.6 18c1.6 4.2 5.6 6.6 11.4 6.6s9.8-2.4 11.4-6.6c-.8 5.6-5.4 8.8-11.4 8.8S9.4 23.6 8.6 18z" fill="#f4d67f"/>
+    ${[[13.4, 17.4, 25], [18.6, 19.4, -20], [24.4, 17.8, 40], [21.4, 15.6, -35], [15.6, 20.6, 12], [26, 20.4, -15]].map(([x, y, r]) =>
+    `<ellipse cx="${x}" cy="${y}" rx="2.3" ry="1.05" fill="#5f9c46" transform="rotate(${r} ${x} ${y})"/>`).join('')}
+    <ellipse cx="14.6" cy="15.4" rx="3.2" ry="1.2" fill="#fff" opacity=".4"/>`,
+
+  /* Cơm tấm: ụ cơm hạt gãy, có hạt rời quanh chân, khói bay lên. */
   com: () => `
-    <ellipse cx="20" cy="28" rx="15" ry="7" fill="#fbf6ec" stroke="#e0d2bb" stroke-width="1.4"/>
-    <path d="M6.6 26c1-7 6.6-12 13.4-12s12.4 5 13.4 12c-3 2.6-8 4-13.4 4s-10.4-1.4-13.4-4z" fill="#fffdf7" stroke="#e6d9c4" stroke-width="1.3"/>
-    ${[[14, 22], [20, 19], [26, 22], [17, 25], [23, 25], [20, 23.6]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="2.1" ry="1.3" fill="#f2e9d8" transform="rotate(${(x * 13) % 70 - 35} ${x} ${y})"/>`).join('')}
-    <path d="M13 12c0-2 2-2 2-4M20 10c0-2 2-2 2-4M27 12c0-2 2-2 2-4" stroke="#d8e2e8" stroke-width="1.5" fill="none" stroke-linecap="round"/>`,
-  hop: c => `
-    <path d="M6 15 20 10l14 5-14 5z" fill="${shade(c, .25)}" stroke="#cbb994" stroke-width="1.3"/>
-    <path d="M6 15v12l14 5V20z" fill="${c}" stroke="#cbb994" stroke-width="1.3"/>
-    <path d="M34 15v12l-14 5V20z" fill="${shade(c, -.1)}" stroke="#cbb994" stroke-width="1.3"/>
-    <path d="M13 17.4v4" stroke="#cbb994" stroke-width="1.2"/>`,
-  bodo: c => `
-    <path d="M9 34 13 10" stroke="${shade(c, -.25)}" stroke-width="2.4" stroke-linecap="round"/>
-    <path d="M13 34 17 10" stroke="${shade(c, -.25)}" stroke-width="2.4" stroke-linecap="round"/>
-    <path d="M24 34v-13" stroke="#dfe8ee" stroke-width="3" stroke-linecap="round"/>
-    <ellipse cx="24" cy="16" rx="4.2" ry="5.4" fill="#eef4f8" stroke="#c6d4de" stroke-width="1.2"/>
-    <path d="M31 8v26" stroke="#ef8fa0" stroke-width="2.8" stroke-linecap="round"/>
-    <path d="M31 8 34 11" stroke="#ef8fa0" stroke-width="2.8" stroke-linecap="round"/>`
+    ${shadow(20, 30.5, 14)}
+    <path d="M12.6 9.6c0-1.8 1.8-1.8 1.8-3.8M20 8.4c0-1.8 1.8-1.8 1.8-3.8M27.4 9.6c0-1.8 1.8-1.8 1.8-3.8"
+      stroke="#d6e1e7" stroke-width="1.7" fill="none" stroke-linecap="round" opacity=".9"/>
+    <ellipse cx="20" cy="28.4" rx="14.4" ry="3.4" fill="#f3ebdb"/>
+    <path d="M6.4 26.4c1.2-7.8 6.8-13 13.6-13s12.4 5.2 13.6 13c-3.2 2.6-8.2 4-13.6 4s-10.4-1.4-13.6-4z"
+      fill="#fffdf8" stroke="#e4d7c0" stroke-width="1.2"/>
+    ${[[13.6, 22.4, 22], [20, 18.6, -14], [26.2, 22.2, 32], [16.6, 25.4, -30], [23.4, 25.2, 15], [20, 22.8, 48], [10.6, 25.6, -10], [29.4, 25.4, 20]]
+      .map(([x, y, r]) => `<ellipse cx="${x}" cy="${y}" rx="2.2" ry="1.25" fill="#f2e9d6" stroke="#e6dac4" stroke-width=".5" transform="rotate(${r} ${x} ${y})"/>`).join('')}
+    ${[[7.4, 29.4], [32, 29.2], [11, 30.4]].map(([x, y]) =>
+    `<ellipse cx="${x}" cy="${y}" rx="1.8" ry="1" fill="#f6efe0" stroke="#e6dac4" stroke-width=".5"/>`).join('')}
+    <ellipse cx="15.4" cy="18.6" rx="4.4" ry="2" fill="#fff" opacity=".55"/>`,
+
+  hop: () => `
+    ${shadow(20, 33, 13)}
+    <path d="M6.4 14.6 20 9.4l13.6 5.2L20 19.8z" fill="#fbf3e2" stroke="#c9b48c" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M6.4 14.6v13.2L20 33V19.8z" fill="#f0e3c8" stroke="#c9b48c" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M33.6 14.6v13.2L20 33V19.8z" fill="#e3d3b2" stroke="#c9b48c" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M12.6 17.2v4.2" stroke="#c9b48c" stroke-width="1.1"/>
+    <rect x="23.4" y="22.4" width="7.4" height="4.4" rx="1" fill="#fdf8ec" opacity=".85" transform="rotate(-8 27 24.6)"/>
+    ${gloss('M9 15.6 19 12', .5)}`,
+
+  bodo: () => `
+    ${shadow(20, 35.5, 11, .13)}
+    <path d="M8.6 34 12.6 8.6" stroke="#c9a06a" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M12.6 34 16.6 8.6" stroke="#b98f59" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M23.6 34V20.4" stroke="#e4ecf2" stroke-width="3.2" stroke-linecap="round"/>
+    <path d="M23.6 34V20.4" stroke="#bccdd8" stroke-width="1" stroke-linecap="round" fill="none"/>
+    <ellipse cx="23.6" cy="15.4" rx="4.4" ry="5.6" fill="#f2f7fa" stroke="#bccdd8" stroke-width="1.2"/>
+    <ellipse cx="22.2" cy="13.4" rx="1.6" ry="2.2" fill="#fff" opacity=".9"/>
+    <path d="M31.4 7.4v27" stroke="#ef8fa0" stroke-width="2.8" stroke-linecap="round"/>
+    <path d="M31.4 7.4 34.6 10.6" stroke="#ef8fa0" stroke-width="2.8" stroke-linecap="round"/>
+    <path d="M31.4 14v6" stroke="#fff" stroke-width="1" opacity=".6"/>`
 };
+
 function itemArt(k, sz, cls) {
   const it = ITEMS[k] || {}, f = ITEM_ART[k];
   sz = sz || 34;

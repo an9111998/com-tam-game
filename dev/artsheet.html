@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Bảng hình món — Tiệm Cơm Tấm</title>
+<!-- Xem toàn bộ hình món ở nhiều cỡ cùng lúc. Cỡ 46px là cỡ thật trong
+     khay món; nếu ở cỡ đó không nhận ra món thì hình đó hỏng. -->
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Baloo 2', sans-serif; background: #fff6e8; color: #4a382c; margin: 0; padding: 20px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  p.note { color: #8d7560; font-size: 13px; margin: 0 0 18px; }
+  h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .5px; color: #8d7560; margin: 22px 0 8px; }
+  .grid { display: flex; flex-wrap: wrap; gap: 10px; }
+  .cell {
+    background: #fffdf7; border: 2px solid #eddbc0; border-radius: 14px;
+    padding: 8px; text-align: center; width: 132px;
+  }
+  .row { display: flex; align-items: flex-end; justify-content: center; gap: 6px; min-height: 96px; }
+  .cell b { display: block; font-size: 12px; margin-top: 6px; }
+  .cell i { display: block; font-style: normal; font-size: 10.5px; color: #8d7560; }
+  .real { background: #fdf4e4; border-style: dashed; }
+  .plate { background: #fffdf7; border: 2px solid #eddbc0; border-radius: 16px; padding: 10px; width: 300px; }
+</style>
+</head>
+<body>
+<h1>Bảng hình món</h1>
+<p class="note">Ba cỡ: <b>46px</b> là cỡ thật trong khay món · 64px · 96px.
+  Nếu ở 46px mà không đoán ra món thì hình đó cần vẽ lại.</p>
+<div id="out"></div>
+
+<script src="../js/art.js"></script>
+<script src="../js/data.js"></script>
+<script>
+const groups = [
+  ['Món chính', MAIN_KEYS],
+  ['Canh', CANH_KEYS],
+  ['Nước', DRINK_KEYS],
+  ['Cơm và phụ', ['com', 'mohanh']],
+  ['Dụng cụ mang đi', SUP_KEYS]
+];
+document.getElementById('out').innerHTML = groups.map(([n, ks]) => `
+  <h2>${n}</h2>
+  <div class="grid">${ks.map(k => `
+    <div class="cell">
+      <div class="row">${itemArt(k, 46)}${itemArt(k, 64)}${itemArt(k, 96)}</div>
+      <b>${ITEMS[k].n}</b><i>${k}</i>
+    </div>`).join('')}</div>`).join('')
+  + `<h2>Đĩa đang làm</h2><div class="grid">
+      <div class="plate">${plateSVG({ rice: 2, mons: ['suon', 'bi', 'cha'], mohanh: true, canh: 'khoaimo', drink: 'trada' })}</div>
+      <div class="plate">${plateSVG({ rice: 3, mons: ['suon'], mohanh: true, togo: true, bodo: true, drink: 'tratac' })}</div>
+    </div>`
+  + `<h2>Khách</h2><div class="grid">${[0,1,2,3,4,5].map(i =>
+      `<div class="cell"><div class="row">${custSVG(i,'idle',{w:64})}${custSVG(i,'happy',{w:64})}${custSVG(i,'angry',{w:64})}</div>
+       <b>dáng ${i}</b><i>idle · happy · angry</i></div>`).join('')}
+      <div class="cell"><div class="row">${thiefSVG()}</div><b>kẻ trộm</b></div></div>`;
+</script>
+</body>
+</html>

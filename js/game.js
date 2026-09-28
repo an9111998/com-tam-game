@@ -280,6 +280,28 @@ function addReview(s, why, c) {
 const genName = () => Math.random() < .55
   ? rnd(KH_XUNG_NU) + ' ' + rnd(KH_NU)
   : rnd(KH_XUNG_NAM) + ' ' + rnd(KH_NAM);
+
+/* ---------- LỜI KHÁCH GỌI MÓN ----------
+   Dãy chip có dấu tick đọc như một biểu mẫu. Người thật thì nói thành
+   câu, và xưng đúng vai: "Chị Lan" thì tự xưng "chị". Câu nói mới là
+   thứ làm khách ra khách; mấy cái chip bên dưới chỉ để soát lại.     */
+const SO = ['', 'một', 'hai', 'ba', 'bốn', 'năm'];
+function orderSay(c) {
+  const o = c.order;
+  if (!o) return '';
+  const xung = low(c.name.split(' ')[0]);
+  const n = c.orders.length, left = c.done.filter(x => !x).length;
+  const mons = o.mons.map(k => low(ITEMS[k].s)).join(' ');
+  const bits = [];
+  bits.push(`${rnd(c.say ? [c.say] : OPEN)} ${xung} ${n > 1 ? (SO[left] || left) + ' phần' : 'đĩa'} ${mons || 'cơm tấm'}`);
+  if (o.rice === 1) bits.push('ít cơm thôi');
+  else if (o.rice === 3) bits.push('cho nhiều cơm');
+  if (o.mohanh) bits.push('thêm mỡ hành');
+  if (o.canh) bits.push('thêm chén ' + low(ITEMS[o.canh].s));
+  if (o.drink) bits.push('với ly ' + low(ITEMS[o.drink].s));
+  if (o.togo) bits.push('gói mang đi giùm');
+  return bits.join(', ') + (c.end || rnd(ENDS));
+}
 const revCount = () => Math.max(S.revTotal || 0, S.reviews.length);
 
 /* ---------- RUNG + TOAST + MODAL ---------- */
@@ -1001,11 +1023,18 @@ function stageMon() {
     ${outs.length ? `<div class="hint warn">${ic('warn')} Hết: <b>${outs.map(ishort).join(', ')}</b>.
       Khách đã gọi rồi thì mời họ đổi món ở thẻ khách, hoặc chạy chợ gấp.
       <div class="rushrow">${outs.slice(0, 3).map(k => rushBtn(k, 'Mua ' + low(ITEMS[k].s))).join('')}</div></div>` : ''}
-    ${/* Bảng "hết món" chỉ hiện từ cấp 2. Cấp 1 mới có bốn món và chưa có
-          gì để cân đo, thêm hàng nút này chỉ làm màn đầu rối hơn. */
-    level() >= 2 ? `<div class="sooff">${ks.filter(k => qty(k) > 0).map(k => `
-      <button class="sochip${S.soldout[k] ? ' on' : ''}" data-so="${k}">${S.soldout[k] ? ic('lock') : ic('check')}${ishort(k)}</button>`).join('')}</div>
-    <i class="stnote">Bấm vào tên món ở hàng trên để <b>treo bảng hết món</b> — khách sẽ không gọi món đó nữa.</i>` : ''}`;
+    ${/* Bảng "treo hết món" chỉ hiện KHI CẦN: có món đã treo, hoặc có món
+          sắp cạn. Để nó nằm thường trực thì chiếm mất chỗ của khay món và
+          của đĩa, trong khi cả ngày may ra dùng một lần. */
+    (() => {
+      const low = ks.filter(k => qty(k) > 0 && qty(k) <= 2);
+      const flagged = ks.filter(k => S.soldout[k]);
+      const show = [...new Set([...low, ...flagged])];
+      if (level() < 2 || !show.length) return '';
+      return `<div class="sooff">${show.map(k => `
+        <button class="sochip${S.soldout[k] ? ' on' : ''}" data-so="${k}">${S.soldout[k] ? ic('lock') : ic('warn')}${ishort(k)} ${qty(k)}</button>`).join('')}</div>
+      <i class="stnote">Sắp cạn — bấm để <b>treo bảng hết món</b>, khách sẽ thôi gọi món đó.</i>`;
+    })()}`;
 }
 
 function stageCanh() {
@@ -1191,10 +1220,14 @@ function renderTicket() {
   if (!c) { t.innerHTML = `<i class="tempty">Chạm vào một khách phía trên để lấy đơn</i>`; return }
   const o = c.order, n = c.orders.length, doneN = c.done.filter(Boolean).length;
   t.innerHTML = `
-    <div class="tkh">${custSVG(c.look, moodOf(c), { w: 30, regular: c.regular })}
-      <b>${c.name}</b>
-      ${n > 1 ? `<em>phần ${doneN + 1}/${n}</em>` : ''}
-      ${c.quirk ? `<em class="qk" style="--qc:${QUIRKS[c.quirk].c}">${ic(QUIRKS[c.quirk].i)}${QUIRKS[c.quirk].n}</em>` : ''}
+    <div class="tkh">${custSVG(c.look, moodOf(c), { w: 38, regular: c.regular })}
+      <div class="tsay">
+        <div class="tname"><b>${c.name}</b>
+          ${n > 1 ? `<em>phần ${doneN + 1}/${n}</em>` : ''}
+          ${c.quirk ? `<em class="qk" style="--qc:${QUIRKS[c.quirk].c}">${ic(QUIRKS[c.quirk].i)}${QUIRKS[c.quirk].n}</em>` : ''}
+        </div>
+        <p class="bubble">${orderSay(c)}</p>
+      </div>
     </div>
     <div class="tlines">
       ${ticketLine(tray.rice === o.rice, 'rice', riceOf(o.rice).n)}
@@ -1615,6 +1648,9 @@ function spawn() {
   const c = {
     id: ++uid, name, look, regular: !!back || (!!regOf(name) && regOf(name).visits >= 2),
     quirk, orders, done: orders.map(() => false), order: orders[0],
+    /* chốt cách mở lời và tiếng đệm ngay lúc khách vào: nếu bốc lại mỗi
+       lần vẽ thì câu nói nhấp nháy đổi chữ trong khi khách vẫn đứng đó */
+    say: rnd(OPEN), end: rnd(ENDS),
     pat: max, max, wrong: 0, born: performance.now(), disc: 0
   };
   /* khách quen bí tiền hỏi nợ — chỉ từ cấp 3, và không hỏi liên tục */
