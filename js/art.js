@@ -1,5 +1,5 @@
 /* ============================================================
-   ART — hình vẽ SVG cho món, đĩa cơm, khách, icon và hạt hiệu ứng.
+   ART — hình vẽ SVG cho món, dĩa cơm, khách, icon và hạt hiệu ứng.
    Vẽ bằng SVG thay vì ảnh: phóng to không vỡ, đổi màu bằng một biến,
    và bản deploy không phải tải thêm file nào.
    ============================================================ */
@@ -155,7 +155,7 @@ const ITEM_ART = {
     `<ellipse cx="${x}" cy="${y}" rx="1.5" ry=".85" fill="#f6e7c2" opacity=".75"/>`).join('')}
     ${gloss('M15.2 13h9.6', .65)}`,
 
-  /* Trứng ốp la: lòng trắng méo tự nhiên, viền rán vàng giòn, lòng đỏ
+  /* Trứng ốp la: lòng trắng méo tự nhiên, viền chiên vàng giòn, lòng đỏ
      nổi khối có chấm sáng. */
   opla: () => `
     <defs>
@@ -429,7 +429,7 @@ function itemArt(k, sz, cls) {
 
 /* ============================================================
    ĐĨA CƠM ĐANG LÀM — vẽ lại theo đúng những gì đã cho vào khay.
-   Đây là phản hồi chính của game: nhìn đĩa là biết còn thiếu gì.
+   Đây là phản hồi chính của game: nhìn dĩa là biết còn thiếu gì.
    ============================================================ */
 const MON_SLOT = [[74, 96], [122, 92], [100, 128]];
 
@@ -528,7 +528,7 @@ function custSVG(kh, mood, opt) {
   </svg>`;
 }
 
-/** kẻ trộm — cố ý khác hẳn khách: áo tối, khẩu trang, mũ lưỡi trai */
+/** kẻ trộm — cố ý khác hẳn khách: áo tối, khẩu trang, nón lưỡi trai */
 function thiefSVG() {
   return `<svg class="thief-svg" viewBox="0 0 58 72" width="56" aria-hidden="true">
     <path d="M6 72c0-12 10-19 23-19s23 7 23 19z" fill="#4d4a57"/>
@@ -544,7 +544,7 @@ function thiefSVG() {
 /* ============================================================
    CẢNH QUÁN — ba lớp xếp sau nhau cho có chiều sâu.
    Lớp sau (tường, bảng menu) đứng yên, lớp giữa (quầy kính) nhận
-   thao tác, lớp trước (đĩa) nổi lên trên cùng.
+   thao tác, lớp trước (dĩa) nổi lên trên cùng.
    ============================================================ */
 function shopBackSVG() {
   return `<svg class="scene-back" viewBox="0 0 400 180" preserveAspectRatio="none" aria-hidden="true">

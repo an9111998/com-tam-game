@@ -113,7 +113,7 @@ function load() {
 
 /* ============================================================
    CHỢ ĐẦU MỐI — giá nhập trôi mỗi ngày
-   Chợ đắt lên thì khách cũng biết và thông cảm, nên trần "chê đắt"
+   Chợ mắc lên thì khách cũng biết và thông cảm, nên trần "chê mắc"
    nới theo. Đó là lúc phải tăng giá bán chứ không phải cắn lỗ.
    ============================================================ */
 function rollMarket() {
@@ -136,17 +136,17 @@ function rollMarket() {
 const mkt = k => S.market[k] || 1;
 /* giá nhập hôm nay: giá gốc × chợ × (giảm giá nếu có sự kiện chợ sớm) */
 const buyCost = k => Math.round(CFG.cost[k] * mkt(k) * (evIs('chosom') ? .75 : 1) / 100) * 100;
-/* chỉ số chợ chung, lấy theo mấy món nặng tiền nhất trong đĩa cơm */
+/* chỉ số chợ chung, lấy theo mấy món nặng tiền nhất trong dĩa cơm */
 function mktIdx() {
   const ks = [...MAIN_KEYS, 'com', ...CANH_KEYS];
   const w = ks.reduce((a, k) => a + CFG.cost[k], 0);
   return ks.reduce((a, k) => a + mkt(k) * CFG.cost[k], 0) / w;
 }
-/* khách chịu giá cao hơn bao nhiêu khi chợ đắt */
+/* khách chịu giá cao hơn bao nhiêu khi chợ mắc */
 const priceTol = () => clamp(1 + .6 * (mktIdx() - 1), .92, 1.42);
 const capOf = () => Math.round(CFG.itemCap * priceTol());
 /* Giá bán gợi ý theo chợ hôm nay — nút "Theo chợ" dùng đúng con số này.
-   Phải chặn dưới trần chê đắt: giá do CHÍNH GAME gợi ý mà làm khách bỏ đi
+   Phải chặn dưới trần chê mắc: giá do CHÍNH GAME gợi ý mà làm khách bỏ đi
    thì người chơi không thể tránh được. Đã từng xảy ra khi một món sốt giá
    riêng lẻ (chợ chung vẫn bình thường nên trần không nới theo). */
 const suggest = k => Math.min(
@@ -293,13 +293,15 @@ function orderSay(c) {
   const n = c.orders.length, left = c.done.filter(x => !x).length;
   const mons = o.mons.map(k => low(ITEMS[k].s)).join(' ');
   const bits = [];
-  bits.push(`${rnd(c.say ? [c.say] : OPEN)} ${xung} ${n > 1 ? (SO[left] || left) + ' phần' : 'đĩa'} ${mons || 'cơm tấm'}`);
+  bits.push(`${rnd(c.say ? [c.say] : OPEN)} ${xung} ${n > 1 ? (SO[left] || left) + ' phần' : 'dĩa'} ${mons || 'cơm tấm'}`);
   if (o.rice === 1) bits.push('ít cơm thôi');
   else if (o.rice === 3) bits.push('cho nhiều cơm');
   if (o.mohanh) bits.push('thêm mỡ hành');
   if (o.canh) bits.push('thêm chén ' + low(ITEMS[o.canh].s));
-  if (o.drink) bits.push('với ly ' + low(ITEMS[o.drink].s));
-  if (o.togo) bits.push('gói mang đi giùm');
+  /* nước suối bán theo chai, mấy thứ còn lại mới rót ly */
+  if (o.drink) bits.push((o.drink === 'nuocsuoi' ? 'với chai nước suối' : 'với ly ' + low(ITEMS[o.drink].s)));
+  /* không thêm "giùm" ở đây: tiếng đệm cuối câu đã có sẵn " giùm nha!" */
+  if (o.togo) bits.push('gói mang đi');
   return bits.join(', ') + (c.end || rnd(ENDS));
 }
 const revCount = () => Math.max(S.revTotal || 0, S.reviews.length);
@@ -391,7 +393,7 @@ function fl(el, t, bad) {
 }
 
 /** MÓN BAY TỪ KHAY VÀO ĐĨA — hoạt ảnh dịch chuyển giữa các món.
- *  Nhân bản hình món rồi cho bay theo đường cong tới giữa đĩa. */
+ *  Nhân bản hình món rồi cho bay theo đường cong tới giữa dĩa. */
 function flyTo(fromEl, html) {
   if (!fromEl || lessMotion()) return;
   const to = $('plateBox');
@@ -415,7 +417,7 @@ function flyTo(fromEl, html) {
 
 /* ---------- VUỐT / CHẠM ----------
    Một chỗ duy nhất hiểu cử chỉ: vuốt bốn hướng và chạm. Nhờ vậy cả
-   quầy, đĩa và thẻ khách dùng chung một cách hiểu, không lệch nhau.  */
+   quầy, dĩa và thẻ khách dùng chung một cách hiểu, không lệch nhau.  */
 function bindGest(el, h) {
   if (!el) return;
   let x0 = 0, y0 = 0, t0 = 0, on = false;
@@ -486,7 +488,7 @@ const TABS = [
 
 function renderPrep() {
   R.mode = 'prep'; R.running = false; R.wx = null;
-  clearFX(); paintWeather();
+  clearFX(); paintWeather(); audioScene('prep');
   const pane = { kho: paneKho, cho: paneCho, quan: paneQuan, no: paneNo, danhgia: paneRev, tongket: paneSum }[R.tab] || paneKho;
   $('view').innerHTML = `
     <div class="prep">
@@ -539,7 +541,7 @@ function stockRow(k) {
 
 function paneKho() {
   const grp = [
-    { n: 'Cơm — nấu theo muôi', keys: ['com'], i: 'rice' },
+    { n: 'Cơm — nấu theo vá', keys: ['com'], i: 'rice' },
     { n: 'Món chính', keys: MAIN_KEYS, i: 'plate' },
     { n: 'Canh', keys: CANH_KEYS, i: 'soup', lv: 3 },
     { n: 'Nước', keys: DRINK_KEYS, i: 'cup', lv: 2 },
@@ -549,8 +551,8 @@ function paneKho() {
   const tot = planTotal(), exp = expected();
   const cook = (R.plan.com || 0) + qty('com');
   return `
-    <div class="hint">${ic('warn')} Cơm tính theo <b>muôi</b>: ít 1 muôi, vừa 2, nhiều 3. Nồi nhà bạn nấu được
-      <b>${riceCap()} muôi</b> mỗi ngày${cook > riceCap() ? ` — đang tính ${cook} muôi, quá nồi rồi` : ''}.
+    <div class="hint">${ic('warn')} Cơm tính theo <b>vá</b>: ít 1 vá, vừa 2, nhiều 3. Nồi nhà bạn nấu được
+      <b>${riceCap()} vá</b> mỗi ngày${cook > riceCap() ? ` — đang tính ${cook} vá, quá nồi rồi` : ''}.
       Hôm nay chắc bán được khoảng <b>${exp.parts} phần</b>.</div>
     ${grp.map(g => `<h4>${ic(g.i)} ${g.n}</h4>` + g.keys.map(stockRow).join('')).join('')}
     <div class="buybar">
@@ -588,7 +590,7 @@ function priceRow(k) {
   return `
     <div class="row">
       ${itemArt(isRice ? 'com' : k, 30)}
-      <div class="rn"><b>${nm}</b><i>Nhập ${fmt(cost)} · theo chợ nên bán ${fmt(sg)}${bad ? ` · <em class="exp hot">đắt quá</em>` : ''}</i></div>
+      <div class="rn"><b>${nm}</b><i>Nhập ${fmt(cost)} · theo chợ nên bán ${fmt(sg)}${bad ? ` · <em class="exp hot">mắc quá</em>` : ''}</i></div>
       <input class="pin" type="number" inputmode="numeric" data-sell="${k}" value="${v}" step="1000">
     </div>`;
 }
@@ -598,9 +600,9 @@ function paneCho() {
     .sort((a, b) => mkt(b) - mkt(a)).slice(0, 6);
   return `
     <div class="hint ${up > 6 ? 'warn' : ''}">${ic(up >= 0 ? 'chartup' : 'chartdown')}
-      Chợ hôm nay ${up === 0 ? 'y như hôm qua' : (up > 0 ? `<b>đắt hơn ${up}%</b>` : `<b>rẻ hơn ${-up}%</b>`)}.
-      ${up > 6 ? `Khách ngoài chợ cũng thấy vậy nên đang <b>thông cảm</b>: giờ bán tới <b>${fmt(tol)}</b> một món mới bị chê đắt.
-        Chợ lên thì giá bán phải lên, đừng cắn lỗ.` : `Khách sẽ chê đắt nếu một món vượt <b>${fmt(tol)}</b>.`}</div>
+      Chợ hôm nay ${up === 0 ? 'y như hôm qua' : (up > 0 ? `<b>mắc hơn ${up}%</b>` : `<b>rẻ hơn ${-up}%</b>`)}.
+      ${up > 6 ? `Khách ngoài chợ cũng thấy vậy nên đang <b>thông cảm</b>: giờ bán tới <b>${fmt(tol)}</b> một món mới bị chê mắc.
+        Chợ lên thì giá bán phải lên, đừng cắn lỗ.` : `Khách sẽ chê mắc nếu một món vượt <b>${fmt(tol)}</b>.`}</div>
     ${movers.length ? `<h4>${ic('price')} Biến động đáng chú ý</h4>
       <div class="mkt">${movers.map(k => {
     const v = pct(mkt(k));
@@ -700,7 +702,7 @@ function paneSum() {
   return `
     <div class="kpis">
       <div><b>${S.served}</b><span>phần đã bán</span></div>
-      <div><b>${fmtBig(Math.max(0, tot))}</b><span>lãi tích luỹ</span></div>
+      <div><b>${fmtBig(Math.max(0, tot))}</b><span>lời tích luỹ</span></div>
       <div><b>${S.best || S.day}</b><span>ngày trụ được</span></div>
     </div>
     ${h.length ? `<h4>${ic('chart')} 14 ngày gần nhất</h4>
@@ -759,7 +761,7 @@ function doBuy() {
   if (tot > S.money) { toast('Không đủ tiền. Bớt lại chút hoặc vào Sổ nợ vay tạm'); vib(60); return }
   const rice = (R.plan.com || 0) + qty('com');
   if (rice > riceCap()) {
-    toast(`Nồi cơm chỉ nấu được ${riceCap()} muôi. Mua nồi to hơn ở tab Quán nhé`); vib(60); return;
+    toast(`Nồi cơm chỉ nấu được ${riceCap()} vá. Mua nồi to hơn ở tab Quán nha`); vib(60); return;
   }
   Object.keys(R.plan).forEach(k => {
     if (!R.plan[k]) return;
@@ -867,6 +869,7 @@ function startDay() {
   clearInterval(timer);
   timer = setInterval(tick, 100);
   sfx('open');
+  audioScene('play');
   vib(20);
 }
 
@@ -895,7 +898,7 @@ function renderPlay() {
           <button class="sbtn" id="dumpBtn">${ic('trash')} Bỏ làm lại</button>
           <button class="big go" id="serveBtn">${ic('hand')} Đưa khách</button>
         </div>
-        <i class="swipetip">${ic('swipe')} Vuốt đĩa lên để đưa · vuốt xuống để bỏ</i>
+        <i class="swipetip">${ic('swipe')} Vuốt dĩa lên để đưa · vuốt xuống để bỏ</i>
       </div>
       <div class="playbar">
         <button class="sbtn" id="pauseBtn">${ic('pause')}</button>
@@ -918,7 +921,7 @@ function renderPlay() {
 
   /* vuốt ngang trên cả khu quầy để đi giữa các khu món */
   bindGest($('scene'), { left: () => stepStation(1), right: () => stepStation(-1) });
-  /* vuốt lên đĩa là đưa khách, vuốt xuống là bỏ làm lại */
+  /* vuốt lên dĩa là đưa khách, vuốt xuống là bỏ làm lại */
   bindGest($('plateBox'), { up: () => serveFocus(), down: () => dumpTray(), tap: () => nextFocus() });
   head(); renderCoach();
 }
@@ -980,12 +983,12 @@ function stageCom() {
   const c = focusCust(), o = c && c.order, want = o ? o.rice : 0;
   const left = qty('com'), lv2 = level() >= 2;
   return `
-    <div class="sthead">${ic('rice')} Nồi cơm${lv2 ? ' + mỡ hành' : ''} <em>còn ${left} muôi</em></div>
+    <div class="sthead">${ic('rice')} Nồi cơm${lv2 ? ' + mỡ hành' : ''} <em>còn ${left} vá</em></div>
     <div class="ricearea">
       <button class="pot${left <= 0 ? ' out' : ''}" id="ricePot" ${left <= 0 ? 'disabled' : ''}>
         <span class="potart">${itemArt('com', 74)}</span>
         <b>Chạm để múc</b>
-        <em>${tray.rice ? riceOf(tray.rice).s + ' — ' + tray.rice + ' muôi' : 'chưa có cơm'}</em>
+        <em>${tray.rice ? riceOf(tray.rice).s + ' — ' + tray.rice + ' vá' : 'chưa có cơm'}</em>
       </button>
       <div class="ricehelp">
         ${RICE.map(r => `<div class="rh${tray.rice === r.id ? ' on' : ''}${want === r.id ? ' want' : ''}">
@@ -1018,14 +1021,14 @@ function stageMon() {
   const ks = MAIN_KEYS.filter(k => S.unlocked[k]);
   const outs = ks.filter(off);
   return `
-    <div class="sthead">${ic('plate')} Khay món mặn <em>chạm để gắp vào đĩa</em></div>
+    <div class="sthead">${ic('plate')} Khay món mặn <em>chạm để gắp vào dĩa</em></div>
     <div class="dishes">${ks.map(monBtn).join('')}</div>
     ${outs.length ? `<div class="hint warn">${ic('warn')} Hết: <b>${outs.map(ishort).join(', ')}</b>.
       Khách đã gọi rồi thì mời họ đổi món ở thẻ khách, hoặc chạy chợ gấp.
       <div class="rushrow">${outs.slice(0, 3).map(k => rushBtn(k, 'Mua ' + low(ITEMS[k].s))).join('')}</div></div>` : ''}
     ${/* Bảng "treo hết món" chỉ hiện KHI CẦN: có món đã treo, hoặc có món
           sắp cạn. Để nó nằm thường trực thì chiếm mất chỗ của khay món và
-          của đĩa, trong khi cả ngày may ra dùng một lần. */
+          của dĩa, trong khi cả ngày may ra dùng một lần. */
     (() => {
       const low = ks.filter(k => qty(k) > 0 && qty(k) <= 2);
       const flagged = ks.filter(k => S.soldout[k]);
@@ -1171,10 +1174,10 @@ function tapItem(k, el) {
   renderStage(); renderStBar(); renderPlate(); coachCheck();
 }
 
-/* Chạm nồi cơm: mỗi lần một muôi. 1 = ít, 2 = bình thường, 3 = nhiều. */
+/* Chạm nồi cơm: mỗi lần một vá. 1 = ít, 2 = bình thường, 3 = nhiều. */
 function tapRice(el) {
   if (!R.running || R.paused) return;
-  if (tray.rice >= 3) { toast('Đầy rồi. Vuốt đĩa xuống để bỏ làm lại'); vib(50); return }
+  if (tray.rice >= 3) { toast('Đầy rồi. Vuốt dĩa xuống để bỏ làm lại'); vib(50); return }
   if (!take('com')) {
     toast('Hết cơm! Nấu thêm nồi nữa đi'); vib([60, 40, 60]);
     if (S.soldout.com !== 1) { }
@@ -1201,14 +1204,14 @@ function dumpTray() {
   const r = S.cur; r.spoil.n++; r.spoil.v += tray.cost;
   tray = newTray();
   sfx('dump'); vib(30);
-  toast('Đã bỏ đĩa, làm lại từ đầu');
+  toast('Đã bỏ dĩa, làm lại từ đầu');
   renderStage(); renderStBar(); renderPlate();
 }
 
 /* ---------- ĐĨA + PHIẾU ---------- */
 function renderPlate() {
   const b = $('plateBox'); if (!b) return;
-  b.innerHTML = plateSVG(tray) + `<div class="pval">${tray.used || tray.rice ? 'Đang làm ' + fmt(price(tray)) : 'Đĩa trống'}</div>`;
+  b.innerHTML = plateSVG(tray) + `<div class="pval">${tray.used || tray.rice ? 'Đang làm ' + fmt(price(tray)) : 'Dĩa trống'}</div>`;
   renderTicket();
 }
 function ticketLine(ok, icn, txt) {
@@ -1499,7 +1502,7 @@ function serve(i) {
   const reg = touchRegular(c);
   if (rv.s >= 4) reg.trust = clamp(reg.trust + .04, 0, 1);
   fl(el, `+${fmt(p + tip)}  ${'★'.repeat(rv.s)}`, false);
-  sfx('serve'); vib(rv.s >= 5 ? [15, 40, 15, 40, 25] : 22);
+  sfx('serve'); setTimeout(() => sfx('cash'), 150); vib(rv.s >= 5 ? [15, 40, 15, 40, 25] : 22);
   if (rv.s >= 5) setTimeout(() => sfx('star'), 220);
   burstAt(el, '__serve');
   R.slots[i] = null;
@@ -1621,7 +1624,7 @@ function spawn() {
     if (!R.pricyT || performance.now() - R.pricyT > 8000) {
       R.pricyT = performance.now();
       const k = pi[0];
-      toast('Khách xem bảng giá, chê ' + low(k.startsWith('com') && k !== 'com' ? riceOf(+k.slice(3)).n : ITEMS[k].n) + ' đắt quá rồi đi', 2600);
+      toast('Khách xem bảng giá, chê ' + low(k.startsWith('com') && k !== 'com' ? riceOf(+k.slice(3)).n : ITEMS[k].n) + ' mắc quá rồi đi', 2600);
     }
     return;
   }
@@ -1632,7 +1635,7 @@ function spawn() {
   for (let n = 0; n < nParts; n++) { const o = genOrder(); if (o) orders.push(o) }
   if (!orders.length) return;
   if ((orders.some(overCap) && Math.random() < .6) || (orders.some(orderPricey) && Math.random() < .35)) {
-    R.today.priceLost++; toast('Có khách chê đắt, bỏ đi'); return;
+    R.today.priceLost++; toast('Có khách chê mắc, bỏ đi'); return;
   }
   /* khách quen hay quay lại: đã có sổ khách quen thì ưu tiên gọi họ */
   const regs = S.regulars.filter(r => r.visits >= 2);
@@ -1799,6 +1802,7 @@ function wxTick() {
   if (to === now) return;
   R.wx = to;
   paintWeather(); head();
+  syncRainSound();
   const w = WEATHER[to];
   toast(ic(w.ic) + ' Trời đổi: <b>' + w.n + '</b>. ' + w.d, 3800);
   sfx(to === 'rao' || to === 'dam' ? 'rain' : 'shine');
@@ -1858,7 +1862,7 @@ function updBars() {
 
 function pauseGame() {
   if (!R.running || R.paused) return;
-  R.paused = true; clearInterval(timer);
+  R.paused = true; clearInterval(timer); audioScene('prep');
   ask(`<div class="pbig">${ic('clock')}</div><h2>Nghỉ tay</h2>
     <p>${gameClock()} — đã bán ${R.today.served} phần, thu ${fmt(R.today.rev + R.today.tips)}</p>`,
     [['Dọn dẹp đóng cửa', () => { R.slots = R.slots.map(() => null); R.t = 0; endDay() }],
@@ -1866,7 +1870,7 @@ function pauseGame() {
 }
 function resumeGame() {
   if (!R.running || !R.paused) return;
-  R.paused = false; clearInterval(timer); timer = setInterval(tick, 100); head();
+  R.paused = false; clearInterval(timer); timer = setInterval(tick, 100); audioScene('play'); head();
 }
 
 /* ---------- HƯỚNG DẪN MÀN ĐẦU ----------
@@ -1901,7 +1905,7 @@ function coachCheck() {
   R.coach++;
   if (R.coach >= COACH.length) {
     R.coach = -1; S.coachDone = true; save();
-    toast('Vậy là biết bán rồi! Cứ thế làm cho hết ngày nhé', 3200);
+    toast('Vậy là biết bán rồi! Cứ thế làm cho hết ngày nha', 3200);
   }
   renderCoach();
 }
@@ -1910,6 +1914,8 @@ function coachCheck() {
 function endDay() {
   clearInterval(timer); R.running = false;
   clearThief(); clearFX();
+  /* đóng cửa thì tắt tiếng quán và tiếng mưa, chỉ để nhạc chạy tiếp */
+  audioScene('prep');
   const T = R.today, r = S.cur, fc = fixed();
   R.slots.forEach(c => { if (c) T.lost++ });
 
@@ -1996,9 +2002,9 @@ function endDay() {
       ${r.deadDebt ? `<div><span class="wl">${ic('trash')} Nợ mất trắng</span><span class="wl">${fmt(r.deadDebt)}</span></div>` : ''}
       ${r.bad ? `<div><span class="wl">${ic('warn')} ${S.badToday ? S.badToday.n : 'Sự cố'}</span><span class="wl">${fmt(r.bad)}</span></div>` : ''}
       ${r.gift ? `<div><span class="wl">${ic('gift')} ${S.gift ? S.gift.n : 'Quà'}</span><span class="wl">+${fmt(r.gift)}</span></div>` : ''}
-      ${r.spoil.n ? `<div><span class="wl">${ic('trash')} ${r.spoil.n} đĩa bỏ phí</span><span class="wl">${fmt(r.spoil.v)}</span></div>` : ''}
-      ${wv ? `<div><span class="wl">${ic('trash')} Trong đó bỏ vì hỏng: ${waste.map(x => ishort(x.k) + ' ' + x.q).join(', ')}</span><span class="wl">${fmt(wv)}</span></div>` : ''}
-      <div class="tot"><span>${ic('chart')} Lãi</span><span class="${profit < 0 ? 'neg' : 'pos'}">${profit < 0 ? '−' : '+'}${fmt(Math.abs(profit))}</span></div>
+      ${r.spoil.n ? `<div><span class="wl">${ic('trash')} ${r.spoil.n} dĩa bỏ phí</span><span class="wl">${fmt(r.spoil.v)}</span></div>` : ''}
+      ${wv ? `<div><span class="wl">${ic('trash')} Trong đó bỏ vì hư: ${waste.map(x => ishort(x.k) + ' ' + x.q).join(', ')}</span><span class="wl">${fmt(wv)}</span></div>` : ''}
+      <div class="tot"><span>${ic('chart')} Lời</span><span class="${profit < 0 ? 'neg' : 'pos'}">${profit < 0 ? '−' : '+'}${fmt(Math.abs(profit))}</span></div>
       <div class="tot"><span>${ic('money')} Két</span><span>${fmtBig(S.money)}</span></div>
     </div>
     ${night ? `<p class="lvup warn">${ic('warn')} Đêm qua bị cạy cửa, mất ${fmt(night)}.
@@ -2045,26 +2051,59 @@ function settleDebts() {
 }
 
 /* ============================================================
-   ÂM THANH — tổng hợp hết bằng Web Audio, không dùng file nào.
-   Mặc định TẮT. Bấm nút loa ở màn bán để bật, lựa chọn được nhớ lại.
+   ÂM THANH — tổng hợp toàn bộ bằng Web Audio, không dùng file nào.
+
+   Game gốc dùng nhạc mp3 theo mùa cộng một file tiếng mưa gần nửa MB.
+   Ở đây sinh thẳng bằng Web Audio: bản deploy vẫn nhẹ, mất mạng vẫn có
+   tiếng, và không đụng tới file của ai.
+
+   Bốn lớp, mỗi lớp một núm chỉnh riêng để còn ép nhỏ nhạc khi cần:
+     nhạc nền  — vòng lặp ngũ cung, đổi giọng theo trời
+     tiếng nền — tiếng rì rầm của quán, tiếng chảo xèo
+     tiếng mưa — lớp riêng, bật tắt theo thời tiết
+     tiếng động— chạm, gắp, giao dĩa, tiền, chuông cửa
+
+   MẶC ĐỊNH BẬT. Bản trước để mặc định tắt nên phần lớn người chơi thử
+   xong lại tưởng game câm — đó là lý do nó bị chê là không sống động.
+   Trình duyệt chỉ cho phát tiếng sau khi người dùng chạm vào trang, nên
+   mọi thứ chờ cử chỉ đầu tiên rồi mới khởi động.
    ============================================================ */
-let SND = (() => { try { return localStorage.getItem('ctSound') === 'on' } catch (e) { return false } })();
-let actx = null, auMaster = null;
+let SND = (() => { try { return localStorage.getItem('ctSound') !== 'off' } catch (e) { return true } })();
+let actx = null, auMaster = null, busMusic = null, busAmb = null, busSfx = null;
+let noiseBuf = null, ambNodes = null, rainNodes = null, musicT = null, musicAt = 0, musicStep = 0;
 
 function auCtx() {
   if (!SND) return null;
   try {
     if (!actx) {
       actx = new (window.AudioContext || window.webkitAudioContext)();
-      auMaster = actx.createGain();
-      auMaster.gain.value = .5;
+      auMaster = actx.createGain(); auMaster.gain.value = .62;
       auMaster.connect(actx.destination);
+      const bus = v => { const g = actx.createGain(); g.gain.value = v; g.connect(auMaster); return g };
+      busMusic = bus(.36); busAmb = bus(.55); busSfx = bus(1);
     }
     if (actx.state === 'suspended') actx.resume();
     return actx;
   } catch (e) { return null }
 }
-function tone(f, at, dur, type, vol, to) {
+
+/* Một đệm nhiễu duy nhất dùng chung cho mưa, tiếng quán và tiếng chảo.
+   Tạo mới mỗi lần sẽ ngốn bộ nhớ và làm khựng máy yếu. */
+function noise() {
+  const c = auCtx(); if (!c) return null;
+  if (!noiseBuf) {
+    const n = c.sampleRate * 2;
+    noiseBuf = c.createBuffer(1, n, c.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+  }
+  const s = c.createBufferSource();
+  s.buffer = noiseBuf; s.loop = true;
+  return s;
+}
+
+/* ---------- tiếng động một lần ---------- */
+function tone(f, at, dur, type, vol, to, bus) {
   const c = auCtx(); if (!c) return;
   const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + at;
   o.type = type || 'sine'; o.frequency.setValueAtTime(f, t);
@@ -2072,52 +2111,236 @@ function tone(f, at, dur, type, vol, to) {
   g.gain.setValueAtTime(0, t);
   g.gain.linearRampToValueAtTime(vol || .18, t + .012);
   g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-  o.connect(g); g.connect(auMaster); o.start(t); o.stop(t + dur + .02);
+  o.connect(g); g.connect(bus || busSfx); o.start(t); o.stop(t + dur + .02);
 }
-function noise(at, dur, freq, q, vol) {
+function burstNoise(at, dur, freq, q, vol, bus) {
   const c = auCtx(); if (!c) return;
-  const n = Math.floor(c.sampleRate * dur), b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0);
-  for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
-  const s = c.createBufferSource(); s.buffer = b;
+  const s = noise(); if (!s) return;
   const f = c.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q || 1;
-  const g = c.createGain(); g.gain.value = vol || .12;
-  s.connect(f); f.connect(g); g.connect(auMaster);
-  s.start(c.currentTime + at);
+  const g = c.createGain();
+  const t = c.currentTime + at;
+  g.gain.setValueAtTime(vol || .12, t);
+  g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  s.connect(f); f.connect(g); g.connect(bus || busSfx);
+  s.start(t); s.stop(t + dur + .02);
 }
+
 const SFX = {
   pick: () => tone(660, 0, .09, 'triangle', .14),
-  scoop: () => { noise(0, .12, 900, 1.2, .1); tone(420, .02, .1, 'sine', .1) },
-  pour: () => noise(0, .3, 1400, .8, .07),
-  soup: () => { tone(320, 0, .14, 'sine', .12); noise(.04, .16, 700, 1, .07) },
-  ice: () => { noise(0, .1, 2600, 2, .09); noise(.07, .1, 3100, 2, .07) },
-  box: () => { noise(0, .12, 500, 1.4, .1); tone(520, .06, .1, 'square', .07) },
-  serve: () => { tone(523, 0, .12, 'triangle', .16); tone(784, .09, .16, 'triangle', .14) },
-  star: () => { tone(880, 0, .1, 'sine', .12); tone(1175, .08, .14, 'sine', .11) },
-  wrong: () => { tone(220, 0, .18, 'sawtooth', .12, 130); noise(.02, .15, 300, .8, .08) },
-  arrive: () => { tone(587, 0, .1, 'sine', .12); tone(740, .07, .12, 'sine', .1) },
-  leave: () => tone(330, 0, .22, 'sine', .1, 190),
-  coin: () => { tone(1046, 0, .08, 'triangle', .13); tone(1318, .06, .12, 'triangle', .11) },
+  scoop: () => { burstNoise(0, .13, 800, 1.1, .1); tone(400, .02, .1, 'sine', .09) },
+  pour: () => burstNoise(0, .34, 1300, .7, .08),
+  soup: () => { tone(300, 0, .15, 'sine', .11); burstNoise(.04, .18, 640, 1, .07) },
+  ice: () => { burstNoise(0, .09, 2700, 2.4, .1); burstNoise(.07, .09, 3200, 2.4, .08); tone(1500, .03, .07, 'triangle', .05) },
+  box: () => { burstNoise(0, .13, 480, 1.3, .1); tone(520, .06, .1, 'square', .06) },
+  /* giao dĩa: tiếng sứ chạm mặt bàn rồi mới tới tiếng vui */
+  serve: () => { burstNoise(0, .07, 2200, 3, .07); tone(523, .02, .12, 'triangle', .15); tone(784, .11, .16, 'triangle', .13) },
+  star: () => { tone(880, 0, .1, 'sine', .11); tone(1175, .08, .14, 'sine', .1) },
+  wrong: () => { tone(220, 0, .18, 'sawtooth', .12, 130); burstNoise(.02, .16, 300, .8, .08) },
+  /* chuông cửa khi khách bước vào — đúng vai trò bell.mp3 của game gốc */
+  arrive: () => { tone(1318, 0, .5, 'sine', .1); tone(1760, .04, .55, 'sine', .07); tone(2093, .09, .45, 'sine', .04) },
+  leave: () => tone(330, 0, .24, 'sine', .09, 190),
+  /* máy tính tiền: hai tiếng leng keng rồi tiếng ngăn kéo */
+  coin: () => { tone(1046, 0, .09, 'triangle', .13); tone(1568, .06, .13, 'triangle', .11); burstNoise(.16, .13, 900, 1.4, .07) },
+  cash: () => { tone(1318, 0, .08, 'square', .1); tone(1760, .05, .12, 'square', .09); burstNoise(.14, .18, 700, 1.2, .08) },
   buy: () => { tone(440, 0, .09, 'square', .1); tone(660, .07, .12, 'square', .09) },
-  unlock: () => { tone(523, 0, .1, 'triangle', .13); tone(659, .08, .1, 'triangle', .12); tone(880, .16, .16, 'triangle', .11) },
-  open: () => { tone(392, 0, .12, 'sine', .13); tone(523, .1, .14, 'sine', .12); tone(659, .2, .2, 'sine', .11) },
-  dayEnd: () => { tone(659, 0, .14, 'sine', .12); tone(523, .12, .16, 'sine', .11); tone(392, .26, .24, 'sine', .1) },
-  levelUp: () => { [523, 659, 784, 1046].forEach((f, i) => tone(f, i * .08, .16, 'triangle', .12)) },
-  broke: () => { tone(300, 0, .4, 'sawtooth', .12, 90) },
-  slide: () => noise(0, .07, 1800, 1.6, .05),
-  dump: () => { noise(0, .22, 400, .7, .1); tone(200, .04, .2, 'sine', .08, 120) },
-  bike: () => { tone(160, 0, .3, 'sawtooth', .08, 240); noise(.05, .3, 600, .6, .05) },
+  unlock: () => { [523, 659, 880].forEach((f, i) => tone(f, i * .08, .16, 'triangle', .12)) },
+  open: () => { [392, 523, 659].forEach((f, i) => tone(f, i * .1, .2, 'sine', .12)) },
+  dayEnd: () => { [659, 523, 392].forEach((f, i) => tone(f, i * .13, .22, 'sine', .11)) },
+  levelUp: () => { [523, 659, 784, 1046].forEach((f, i) => tone(f, i * .08, .18, 'triangle', .12)) },
+  broke: () => tone(300, 0, .45, 'sawtooth', .12, 90),
+  slide: () => burstNoise(0, .07, 1700, 1.6, .05),
+  dump: () => { burstNoise(0, .24, 380, .7, .1); tone(200, .04, .2, 'sine', .07, 120) },
+  bike: () => { tone(150, 0, .34, 'sawtooth', .07, 230); burstNoise(.05, .34, 550, .6, .05) },
   alarm: () => { [0, .18, .36].forEach(t => tone(880, t, .12, 'square', .13)) },
-  block: () => { tone(300, 0, .1, 'square', .12); tone(500, .08, .12, 'square', .1) },
-  lose: () => { tone(260, 0, .3, 'sawtooth', .13, 110); noise(.05, .25, 250, .7, .08) },
-  rain: () => noise(0, .8, 900, .5, .07),
-  shine: () => { tone(784, 0, .16, 'sine', .11); tone(1046, .12, .2, 'sine', .1) },
-  ok: () => tone(700, 0, .1, 'sine', .12)
+  block: () => { tone(300, 0, .1, 'square', .11); tone(500, .08, .12, 'square', .1) },
+  lose: () => { tone(260, 0, .32, 'sawtooth', .12, 110); burstNoise(.05, .26, 240, .7, .08) },
+  shine: () => { tone(784, 0, .16, 'sine', .1); tone(1046, .12, .2, 'sine', .09) },
+  ok: () => tone(700, 0, .1, 'sine', .11),
+  /* tiếng người nói lao xao, dùng khi khách tới hoặc lúc quán đông */
+  chatter: () => {
+    const f = 300 + Math.random() * 400;
+    tone(f, 0, .11, 'sawtooth', .022, f * .8, busAmb);
+    tone(f * 1.2, .09, .1, 'sawtooth', .018, f, busAmb);
+  },
+  clink: () => burstNoise(0, .06, 2400 + Math.random() * 1200, 3.5, .04, busAmb)
 };
 function sfx(n) { if (!SND) return; const f = SFX[n]; if (f) try { f() } catch (e) { } }
+
+/* ============================================================
+   LỚP NỀN: tiếng quán và tiếng chảo xèo
+   Chạy suốt buổi bán, nhỏ thôi — thứ này không để người ta nghe thấy,
+   mà để khi tắt đi thì thấy trống.
+   ============================================================ */
+function ambienceOn() {
+  const c = auCtx(); if (!c || ambNodes) return;
+  /* rì rầm: nhiễu lọc thấp, biên độ dập dềnh rất chậm */
+  const hum = noise(), hf = c.createBiquadFilter(), hg = c.createGain();
+  hf.type = 'lowpass'; hf.frequency.value = 420; hf.Q.value = .6;
+  hg.gain.value = .055;
+  const lfo = c.createOscillator(), lg = c.createGain();
+  lfo.frequency.value = .09; lg.gain.value = .022;
+  lfo.connect(lg); lg.connect(hg.gain);
+  hum.connect(hf); hf.connect(hg); hg.connect(busAmb);
+
+  /* chảo xèo: nhiễu dải cao, rất khẽ */
+  const siz = noise(), sf = c.createBiquadFilter(), sg = c.createGain();
+  sf.type = 'bandpass'; sf.frequency.value = 5200; sf.Q.value = .8;
+  sg.gain.value = .012;
+  const slfo = c.createOscillator(), slg = c.createGain();
+  slfo.frequency.value = .7; slg.gain.value = .006;
+  slfo.connect(slg); slg.connect(sg.gain);
+  siz.connect(sf); sf.connect(sg); sg.connect(busAmb);
+
+  hum.start(); siz.start(); lfo.start(); slfo.start();
+  /* thỉnh thoảng một tiếng chén đũa hoặc một câu nói xa xa */
+  const tick = setInterval(() => {
+    if (!SND || !ambNodes) return;
+    const busy = (R && R.slots) ? R.slots.filter(Boolean).length : 0;
+    if (Math.random() < .25 + busy * .12) sfx(Math.random() < .55 ? 'chatter' : 'clink');
+  }, 1700);
+  ambNodes = { nodes: [hum, siz, lfo, slfo], tick };
+}
+function ambienceOff() {
+  if (!ambNodes) return;
+  clearInterval(ambNodes.tick);
+  ambNodes.nodes.forEach(n => { try { n.stop() } catch (e) { } });
+  ambNodes = null;
+}
+
+/* ---------- tiếng mưa ----------
+   Hai dải nhiễu chồng nhau: dải trầm cho tiếng mưa rơi trên mái, dải cao
+   cho tiếng nước bắn. Mưa dầm thì to và nặng hơn mưa rào.            */
+function rainOn(heavy) {
+  const c = auCtx(); if (!c) return;
+  if (rainNodes) { rainNodes.gain.gain.setTargetAtTime(heavy ? .17 : .1, c.currentTime, .8); rainNodes.heavy = heavy; return }
+  const g = c.createGain(); g.gain.value = 0; g.connect(busAmb);
+
+  const low = noise(), lf = c.createBiquadFilter();
+  lf.type = 'lowpass'; lf.frequency.value = heavy ? 1100 : 900;
+  low.connect(lf); lf.connect(g);
+
+  const hi = noise(), hf = c.createBiquadFilter(), hg = c.createGain();
+  hf.type = 'highpass'; hf.frequency.value = 2600; hg.gain.value = .45;
+  hi.connect(hf); hf.connect(hg); hg.connect(g);
+
+  /* dập dềnh nhẹ để không nghe ra là một dải nhiễu đứng yên */
+  const lfo = c.createOscillator(), lg = c.createGain();
+  lfo.frequency.value = .13; lg.gain.value = .03;
+  lfo.connect(lg); lg.connect(g.gain);
+
+  low.start(); hi.start(); lfo.start();
+  g.gain.setTargetAtTime(heavy ? .17 : .1, c.currentTime, 1.2);
+
+  /* giọt nước lẻ rơi từ mái hiên */
+  const drip = setInterval(() => {
+    if (!SND || !rainNodes) return;
+    if (Math.random() < .35) {
+      const f = 900 + Math.random() * 700;
+      tone(f, 0, .1, 'sine', .035, f * .55, busAmb);
+    }
+  }, 1400);
+  rainNodes = { nodes: [low, hi, lfo], gain: g, drip, heavy };
+}
+function rainOff() {
+  if (!rainNodes) return;
+  const c = auCtx();
+  const r = rainNodes; rainNodes = null;
+  clearInterval(r.drip);
+  if (c) r.gain.gain.setTargetAtTime(0, c.currentTime, .5);
+  setTimeout(() => r.nodes.forEach(n => { try { n.stop() } catch (e) { } }), 1600);
+}
+/* gọi mỗi khi trời đổi: một chỗ duy nhất quyết định có mưa hay không */
+function syncRainSound() {
+  if (!SND) return;
+  if (!R || !R.running) { rainOff(); return }
+  const k = wxKey();
+  if (k === 'rao' || k === 'dam') rainOn(k === 'dam'); else rainOff();
+}
+
+/* ============================================================
+   NHẠC NỀN — vòng lặp ngũ cung sinh tại chỗ
+   Ngũ cung nghe dễ chịu và gần như không bao giờ chỏi, hợp để nghe lặp
+   cả buổi. Trời nắng thì giọng trưởng và nhanh; trời mưa thì chậm lại,
+   xuống quãng trầm, nghe ẩm hơn.
+   ============================================================ */
+const PENTA_VUI = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50];
+const PENTA_MUA = [440.00, 523.25, 587.33, 659.25, 783.99, 880.00];
+
+function musicMood() {
+  const k = R && R.running ? wxKey() : 'nang';
+  const mua = k === 'rao' || k === 'dam';
+  return {
+    sc: mua ? PENTA_MUA : PENTA_VUI,
+    beat: mua ? .62 : .48,            /* giây mỗi phách */
+    vol: mua ? .1 : .12
+  };
+}
+function musicOn() {
+  const c = auCtx(); if (!c || musicT) return;
+  musicAt = c.currentTime + .15; musicStep = 0;
+  musicT = setInterval(musicTick, 180);
+  musicTick();
+}
+function musicOff() {
+  if (musicT) { clearInterval(musicT); musicT = null }
+}
+/* Lên lịch trước 1 giây. Phát ngay tại thời điểm gọi thì tiếng sẽ giật
+   theo nhịp setInterval; đặt trước theo đồng hồ của AudioContext thì đều. */
+function musicTick() {
+  const c = auCtx(); if (!c) { musicOff(); return }
+  const m = musicMood();
+  while (musicAt < c.currentTime + 1) {
+    const t = musicAt - c.currentTime;
+    const s = musicStep;
+    /* giai điệu: gảy như đàn kalimba, thưa cho dễ nghe lâu */
+    if (s % 2 === 0 && Math.random() < .78) {
+      const f = m.sc[Math.floor(Math.random() * m.sc.length)];
+      tone(f, t, .9, 'triangle', m.vol, 0, busMusic);
+      if (Math.random() < .25) tone(f * 2, t + .02, .5, 'sine', m.vol * .35, 0, busMusic);
+    }
+    /* bè trầm mỗi 4 phách */
+    if (s % 4 === 0) tone(m.sc[0] / 4, t, 1.6, 'sine', m.vol * .9, 0, busMusic);
+    /* hợp âm nền mỗi 8 phách, kéo dài cho ấm */
+    if (s % 8 === 0) {
+      [0, 2, 4].forEach((i, n) => tone(m.sc[i] / 2, t + n * .03, 2.6, 'sine', m.vol * .28, 0, busMusic));
+    }
+    musicAt += m.beat;
+    musicStep = (s + 1) % 32;
+  }
+}
+
+/* ---------- bật tắt cả dàn ---------- */
+/* 'prep' = sáng chuẩn bị: chỉ có nhạc, quán chưa mở thì chưa có tiếng người
+   'play' = đang bán: thêm tiếng quán và tiếng mưa
+   false  = tắt hết                                                    */
+function audioScene(mode) {
+  if (!SND || !mode) { ambienceOff(); rainOff(); musicOff(); return }
+  auCtx(); musicOn();
+  if (mode === 'play') { ambienceOn(); syncRainSound() }
+  else { ambienceOff(); rainOff() }
+}
+
+/* Trình duyệt chặn tiếng cho tới khi người dùng chạm vào trang. Bắt cử
+   chỉ đầu tiên rồi mới dựng AudioContext — dựng sớm hơn thì nó nằm ở
+   trạng thái suspended và mọi thứ im lặng mà không báo lỗi gì. */
+let auArmed = false;
+function armAudio() {
+  if (auArmed) return;
+  auArmed = true;
+  auCtx();
+  audioScene(R && R.running ? 'play' : 'prep');
+}
+['pointerdown', 'keydown', 'touchstart'].forEach(ev =>
+  addEventListener(ev, armAudio, { once: true, passive: true }));
+
 function toggleSnd() {
   SND = !SND;
   try { localStorage.setItem('ctSound', SND ? 'on' : 'off') } catch (e) { }
-  if (SND) { auCtx(); sfx('ok') } else if (actx) { try { actx.close() } catch (e) { } actx = null; auMaster = null }
+  if (SND) { auCtx(); sfx('ok'); audioScene(R && R.running ? 'play' : 'prep') }
+  else {
+    audioScene(false);
+    if (actx) { try { actx.close() } catch (e) { } actx = null; auMaster = busMusic = busAmb = busSfx = null; noiseBuf = null }
+  }
   toast(SND ? 'Đã bật tiếng' : 'Đã tắt tiếng');
 }
 
@@ -2194,7 +2417,7 @@ function showTour(k) {
   if (k >= TOUR.length) {
     if (canOfferInstall()) {
       ask(`<div class="pbig">${ic('install')}</div>
-        <h2>Chơi cho đã hơn nhé?</h2>
+        <h2>Chơi cho đã hơn nha?</h2>
         <p>Cài game lên màn hình chính thì chạy <b>toàn màn hình</b>, không thanh địa chỉ,
            và <b>mất mạng vẫn chơi được</b>. Tiến trình vẫn giữ nguyên.</p>`,
         [['Để sau', renderPrep], ['Cài lên máy', () => { doInstall(); renderPrep() }, 1]]);

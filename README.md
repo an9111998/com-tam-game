@@ -25,7 +25,7 @@ node dev/serve.js 8190     # rồi mở http://localhost:8190
 | --- | --- | --- |
 | `index.html` | Khung trang, nạp 3 file js, khai báo PWA | 70 |
 | `css/style.css` | Toàn bộ giao diện + hoạt ảnh | ~770 |
-| `js/art.js` | Hình SVG 21 món, đĩa cơm động, khách, icon, hạt hiệu ứng | ~380 |
+| `js/art.js` | Hình SVG 21 món, dĩa cơm động, khách, icon, hạt hiệu ứng | ~380 |
 | `js/data.js` | Thực đơn, thời tiết, chợ, nâng cấp, lời khách, cấu hình, `cfgSelfCheck()` | ~460 |
 | `js/game.js` | Trạng thái, vòng lặp, tương tác, kinh tế, âm thanh | ~2100 |
 | `sw.js` | Service worker (offline + cài lên máy) | 102 |
@@ -69,7 +69,7 @@ lúc để chạy chợ hay nấu thêm cơm.
 
 | Tab | Việc |
 | --- | --- |
-| Kho | Nhập hàng, nấu cơm theo muôi, mở khoá món mới |
+| Kho | Nhập hàng, nấu cơm theo vá, mở khoá món mới |
 | Chợ & giá | Xem giá chợ hôm nay, tự đặt giá bán, hoặc bấm một nút đặt lại theo chợ |
 | Quán | Thuê nhân viên, mua trang bị |
 | Sổ nợ | Ai đang nợ mình, mình đang vay ai, danh sách khách quen |
@@ -119,17 +119,17 @@ Thiết kế cho ngón tay trên điện thoại, không phải con chuột.
 
 | Cử chỉ | Ở đâu | Làm gì |
 | --- | --- | --- |
-| **Chạm** nồi cơm | khu Nồi cơm | mỗi lần một muôi: 1 ít · 2 vừa · 3 nhiều |
-| **Chạm** món | khay món / canh / nước | món bay vào đĩa kèm hoạt ảnh |
+| **Chạm** nồi cơm | khu Nồi cơm | mỗi lần một vá: 1 ít · 2 vừa · 3 nhiều |
+| **Chạm** món | khay món / canh / nước | món bay vào dĩa kèm hoạt ảnh |
 | **Vuốt ngang** | cả vùng quầy | đổi khu, có hoạt ảnh trượt |
-| **Vuốt lên** | đĩa đang làm | đưa khách |
-| **Vuốt xuống** | đĩa đang làm | bỏ đĩa, làm lại |
+| **Vuốt lên** | dĩa đang làm | đưa khách |
+| **Vuốt xuống** | dĩa đang làm | bỏ dĩa, làm lại |
 | **Chạm** | thẻ khách | chọn khách để lấy đơn |
-| **Vuốt lên** | thẻ khách | đưa đĩa cho đúng khách đó |
+| **Vuốt lên** | thẻ khách | đưa dĩa cho đúng khách đó |
 | **Chạm** | kẻ trộm | chặn hắn lại |
 
-**Rung** theo từng việc, không rung bừa: một nhịp ngắn khi múc muôi cơm đầu,
-hai nhịp ở muôi thứ hai, ba nhịp ở muôi thứ ba — nên cảm nhận được khẩu phần
+**Rung** theo từng việc, không rung bừa: một nhịp ngắn khi múc vá cơm đầu,
+hai nhịp ở vá thứ hai, ba nhịp ở vá thứ ba — nên cảm nhận được khẩu phần
 mà không cần nhìn. Rung dài khi sai đơn, rung dồn khi có trộm. Tắt được bằng
 nút ở thanh dưới.
 
@@ -166,7 +166,7 @@ Giá nhập mỗi món trôi mỗi ngày theo bước ngẫu nhiên có lực k�
 tin sốt giá: *"Heo hơi lên giá"*, *"Biển động, hàng về ít"*, *"Rau củ lên giá sau mưa"*.
 
 Điểm cốt lõi: **khách ngoài chợ cũng biết giá lên**. Khi chỉ số chợ tăng, trần
-"chê đắt" nới theo — chợ đắt 30% thì khách chịu giá cao hơn ~18%. Nên lúc chợ lên
+"chê mắc" nới theo — chợ mắc 30% thì khách chịu giá cao hơn ~18%. Nên lúc chợ lên
 là lúc phải tăng giá bán, không phải lúc cắn lỗ. Tab Chợ nói thẳng con số đó và
 có một nút đặt lại toàn bộ giá bán theo chợ hôm nay.
 
@@ -223,7 +223,7 @@ trả lương để khỏi phải lo.
 | --- | --- | --- |
 | Bạn múc cơm | Tự múc đúng khẩu phần và chan mỡ hành khi phiếu có | 150k |
 | Bạn múc món | Tự gắp món mặn, múc canh, rót nước | 220k |
-| Anh bảo vệ | Trông xe và chặn trộm, cả ngày lẫn đêm | 170k |
+| Anh bảo vệ | Giữ xe và chặn trộm, cả ngày lẫn đêm | 170k |
 
 Thuê cả hai bạn thì người chơi chỉ còn việc chốt đơn — và đó chính là cách để
 theo kịp khi khách dồn ở cấp 4.
@@ -253,7 +253,7 @@ Hai lớp, cả hai chỉ hiện một lần:
    - chạm nồi cơm để múc
    - vuốt sang khay món
    - chạm món khách gọi
-   - vuốt đĩa lên để đưa khách
+   - vuốt dĩa lên để đưa khách
 
    Bước tự chuyển khi làm xong, có nút Bỏ qua, và xong là không bao giờ hiện lại.
 
@@ -270,7 +270,7 @@ Bắt đầu **5 sao rồi trừ dần** — dễ đọc, dễ chỉnh:
 chờ quá 50% kiên nhẫn        → −1
 chờ quá 82% (có quạt: 90%)   → −1
 chờ quá 96%                  → −1
-giá đắt                      → −1
+giá mắc                      → −1
 sai đơn                      → −số lần sai
 mang đi mà thiếu bộ dụng cụ  → −1
 khách khó tính, chờ quá 40%  → −1, và rất khó được 5 sao
@@ -306,11 +306,26 @@ không thể làm.
 của chính ngày đó.** Lấy hôm qua làm mốc thì một ngày mưa sẽ khiến hôm sau nhập
 thiếu, hôm sau nữa càng thiếu — vòng xoáy đó làm người chơi lỗ mà không hiểu vì sao.
 
-**Trần "chê đắt" phải luôn cao hơn giá gợi ý.** Nếu không, mở khoá món đắt sẽ tự
+**Trần "chê mắc" phải luôn cao hơn giá gợi ý.** Nếu không, mở khoá món mắc sẽ tự
 nhiên làm 80% khách bỏ đi. `cfgSelfCheck()` canh chỗ này.
 
-**Âm thanh mặc định tắt.** Lúc tắt thì `AudioContext` không được tạo, im hoàn
+**Âm thanh mặc định BẬT, và có bốn lớp.** Bản đầu để mặc định tắt nên phần
+lớn người thử tưởng game câm — đó là một phần lý do nó bị chê là không sống
+động. Bốn lớp, mỗi lớp một núm riêng: nhạc nền ngũ cung sinh tại chỗ (đổi giọng
+và đổi nhịp theo trời), tiếng rì rầm của quán cộng tiếng chảo xèo, tiếng mưa
+riêng một lớp bật tắt theo thời tiết, và tiếng động từng thao tác. Tất cả tổng
+hợp bằng Web Audio, không một file âm thanh nào — game gốc dùng bốn bản nhạc
+mp3 theo mùa cộng một file mưa gần nửa MB, ở đây sinh thẳng nên bản deploy vẫn
+nhẹ và mất mạng vẫn có tiếng. Tắt tiếng thì `AudioContext` bị đóng hẳn, im hoàn
 toàn chứ không phải vặn nhỏ.
+
+**Toàn bộ chữ trong game dùng giọng Nam.** Đây là quán cơm tấm Sài Gòn, nên:
+*mắc* chứ không phải đắt, *dĩa* chứ không phải đĩa, *vá* chứ không phải muôi,
+*lời* chứ không phải lãi (nhưng *lãi vay* thì vẫn là lãi), *hư* chứ không phải
+hỏng, *bể* chứ không phải vỡ, *giữ xe* chứ không phải trông xe, *chiên* chứ
+không phải rán, *nha/nghen* chứ không phải nhé. Khách còn xưng đúng vai theo
+tên mình: Cô Trâm thì tự xưng *cô*, Chú Nghĩa thì tự xưng *chú*. Thêm chữ mới
+thì đọc lại một lượt theo danh sách này.
 
 **Service worker dùng ĐÚNG MỘT cache, và HTML network-first.** Cache-first sẽ
 làm người chơi kẹt bản cũ vĩnh viễn.
@@ -328,7 +343,7 @@ tiền hàng hôm qua. Bản trước tiêu sạch nên báo phá sản, làm t�
 game sai trong khi thật ra là cách chơi sai.
 
 **Co gọn riêng cho máy màn ngắn** (`@media (max-height: 780px)`): thẻ khách bỏ
-phần liệt kê món, nồi cơm và đĩa nhỏ lại. Mục tiêu duy nhất là nút "Đưa khách"
+phần liệt kê món, nồi cơm và dĩa nhỏ lại. Mục tiêu duy nhất là nút "Đưa khách"
 luôn nằm trong tầm nhìn.
 
 ---
@@ -344,7 +359,7 @@ luôn nằm trong tầm nhìn.
 | `.coach b { display:flex }` làm mọi chữ in đậm trong câu hướng dẫn xuống dòng | Chữ vẫn đọc được, chỉ là vỡ dòng |
 | Lãi tụt dần rồi âm từ cấp 4: chi phí cố định tăng theo trang bị nhưng số phần bán được bị chặn bởi số bàn và giãn cách khách | Không có lỗi nào, chỉ thấy tiền vơi dần. Chính `dev/sim.js` bắt ra |
 | Service worker trả file js cũ trong lúc sửa code | Sửa xong tải lại vẫn thấy bản cũ, dễ đi tìm lỗi ở chỗ không có lỗi. Đã thêm `?nosw` |
-| `suggest()` — giá bán do **chính game** gợi ý theo chợ — có thể vượt trần chê đắt khi một món sốt giá riêng lẻ (chợ chung vẫn bình thường nên trần không nới theo). Bấm nút "Theo chợ" là tự tay làm 80% khách bỏ đi | Không có lỗi, không có cảnh báo, chỉ thấy khách vắng hẳn sau khi bấm một nút mà game khuyên bấm. Đã kẹp `suggest()` dưới `capOf()` và thêm phép thử trong `cfgSelfCheck()` |
+| `suggest()` — giá bán do **chính game** gợi ý theo chợ — có thể vượt trần chê mắc khi một món sốt giá riêng lẻ (chợ chung vẫn bình thường nên trần không nới theo). Bấm nút "Theo chợ" là tự tay làm 80% khách bỏ đi | Không có lỗi, không có cảnh báo, chỉ thấy khách vắng hẳn sau khi bấm một nút mà game khuyên bấm. Đã kẹp `suggest()` dưới `capOf()` và thêm phép thử trong `cfgSelfCheck()` |
 | Vòng xoáy phá sản: mở khoá món mới ngốn hết vốn nhập hàng, mà mở thêm món còn làm khách tản ra nhiều món hơn nên cùng số hàng lại hết lẻ tẻ. Ít hàng → ít khách → ít tiền → càng ít hàng, bốn ngày là dẹp quán | Mỗi bước đều hợp lý, không có lỗi nào. Chỉ `dev/sim.js` chạy nhiều lần mới lộ ra: `sold` tụt về 0 mà `lost` cũng 0 — dấu hiệu quán không có gì để bán, chứ không phải khách bỏ đi. Đã thêm cảnh báo khi mở khoá ăn vào vốn lưu động |
 | Nút "Đưa khách" trôi khỏi màn hình ở máy 375×667 | Ở khổ 430×900 vừa khít nên không thấy gì; máy nhỏ hơn thì phải cuộn mới bấm được thứ bấm nhiều nhất |
 

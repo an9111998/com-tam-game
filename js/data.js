@@ -11,9 +11,9 @@ const mk = (type, g) => (k, n, sn, c, life, cost, sell, unlock, fam) => {
 };
 
 /* ---------- MÓN CHÍNH (12) ----------
-   Hạn dùng ngắn là nguồn sức ép chính: thịt tươi để qua ngày là hỏng,
+   Hạn dùng ngắn là nguồn sức ép chính: thịt tươi để qua ngày là hư,
    nên mỗi sáng phải đoán hôm nay bán được bao nhiêu.
-   Thứ tự xếp từ rẻ tới đắt để lộ trình mở khoá rõ ràng.               */
+   Thứ tự xếp từ rẻ tới mắc để lộ trình mở khoá rõ ràng.               */
 const MN = mk('mon', 'mon');
 MN('bi',       'Bì',            'Bì',      '#e8d9a8', 2,  4000,  8000,       0, 'nguoi');
 MN('opla',     'Trứng ốp la',   'Ốp la',   '#f7d764', 7,  4500,  8000,       0, 'nguoi');
@@ -45,7 +45,7 @@ const PH = mk('phu', 'phu');
 PH('mohanh',   'Mỡ hành',       'Mỡ hành', '#a8c96a', 2,  1500,  3000,       0, 'phu');
 
 /* ---------- CƠM ----------
-   Cơm tính theo muôi. Người chơi chạm nồi 1/2/3 lần, mỗi lần một muôi.
+   Cơm tính theo vá. Người chơi chạm nồi 1/2/3 lần, mỗi lần một vá.
    Giá bán ba mức đặt riêng nên vẫn tự do định giá như mọi món khác.    */
 ITEMS.com = { n: 'Cơm tấm', s: 'Cơm', type: 'com', g: 'com', c: '#f6ecd8', life: 1, cost: 1800, unlock: 0, fam: 'com' };
 
@@ -91,7 +91,7 @@ const STATIONS = [
    p: loại hạt · n: số hạt · a: kiểu bay · d: thời lượng (ms)
    Khoá bắt đầu bằng __ là động tác chung, không phải món.             */
 const FXMAP = {
-  __rice:  { p: 'grain',  n: 7,  a: 'fall',   d: 620,  lbl: 'Một muôi cơm' },
+  __rice:  { p: 'grain',  n: 7,  a: 'fall',   d: 620,  lbl: 'Một vá cơm' },
   __mon:   { p: 'steam',  n: 6,  a: 'rise',   d: 760 },
   __canh:  { p: 'drop',   n: 8,  a: 'rise',   d: 820,  lbl: 'Múc canh' },
   __nuoc:  { p: 'ice',    n: 7,  a: 'fall',   d: 780,  lbl: 'Thêm đá' },
@@ -166,7 +166,7 @@ const EVS = {
 
 /* ---------- CHỢ ĐẦU MỐI ----------
    Giá nhập trôi mỗi ngày theo bước ngẫu nhiên, thỉnh thoảng có món
-   sốt giá hẳn. Khi chợ đắt thì khách CŨNG biết, nên trần chê đắt nới
+   sốt giá hẳn. Khi chợ mắc thì khách CŨNG biết, nên trần chê mắc nới
    ra — đó là lúc nên tăng giá bán, không phải cắn lỗ.                */
 const MARKET_NEWS = [
   { t: 'Heo hơi lên giá', ks: ['suon', 'baroi', 'heoquay', 'bi', 'cha'] },
@@ -203,7 +203,7 @@ const UPG = [
   { id: 'maiche', n: 'Mái che trước quán',   d: 'Trời mưa chỉ vắng một nửa so với bình thường',          cost: 850000,  i: 'rain' },
   { id: 'quat',   n: 'Quạt hơi nước',        d: 'Khách chịu chờ lâu hơn 25%, nắng gắt cũng đỡ',          cost: 550000,  i: 'wind' },
   { id: 'tukinh', n: 'Tủ kính giữ nóng',     d: 'Món mặn để được thêm 1 ngày, đỡ phải bỏ',               cost: 1100000, i: 'box' },
-  { id: 'noicom', n: 'Nồi cơm điện to',      d: 'Mỗi lần nấu được thêm 40 muôi cơm',                     cost: 480000,  i: 'rice' },
+  { id: 'noicom', n: 'Nồi cơm điện to',      d: 'Mỗi lần nấu được thêm 40 vá cơm',                     cost: 480000,  i: 'rice' },
   { id: 'cam',    n: 'Camera an ninh',       d: 'Trộm ban đêm gần như không còn, và dễ bắt trộm ban ngày', cost: 900000, i: 'eye' },
   { id: 'ketsat', n: 'Két sắt',              d: 'Bị trộm thì mất ít hơn nhiều',                          cost: 700000,  i: 'money' },
   { id: 'xecho',  n: 'Xe máy chở hàng',      d: 'Chạy chợ gấp nhanh gấp đôi và đỡ bị hớ giá',            cost: 950000,  i: 'bike' }
@@ -215,7 +215,7 @@ const UPG = [
 const STAFF = [
   { id: 'nv1', n: 'Bạn múc cơm', d: 'Tự múc cơm đúng khẩu phần và chan mỡ hành khi phiếu có', cost: 420000, wage: 'wage1', i: 'rice' },
   { id: 'nv2', n: 'Bạn múc món', d: 'Tự gắp món mặn, múc canh và rót nước cho đơn đang làm',   cost: 780000, wage: 'wage2', i: 'plate' },
-  { id: 'baove', n: 'Anh bảo vệ', d: 'Trông xe và chặn trộm giúp bạn, cả ngày lẫn đêm',        cost: 600000, wage: 'wage3', i: 'shield' }
+  { id: 'baove', n: 'Anh bảo vệ', d: 'Giữ xe và chặn trộm giúp bạn, cả ngày lẫn đêm',        cost: 600000, wage: 'wage3', i: 'shield' }
 ];
 
 /* ---------- QUÀ / SỰ CỐ ---------- */
@@ -232,7 +232,7 @@ const GIFTS = [
 
 const BAD = [
   { id: 'gas',   n: 'Hết gas giữa buổi',  d: 'Bình gas cạn đúng giờ cao điểm, phải gọi đổi gấp',  min: 60000,  max: 180000 },
-  { id: 'vo',    n: 'Vỡ chồng đĩa',       d: 'Một chồng đĩa rơi, phải mua bù',                    min: 40000,  max: 130000 },
+  { id: 'vo',    n: 'Bể chồng dĩa',       d: 'Một chồng dĩa rơi, phải mua bù',                    min: 40000,  max: 130000 },
   { id: 'dien',  n: 'Hoá đơn điện tăng',  d: 'Chạy tủ lạnh và quạt nhiều nên tiền điện vọt lên',  min: 50000,  max: 190000 },
   { id: 'phuong',n: 'Phường nhắc lấn lề', d: 'Bị nhắc vì kê bàn ra lề đường, đóng phí',           min: 80000,  max: 220000 },
   { id: 'chuot', n: 'Chuột vào kho',      d: 'Chuột gặm mất ít hàng trong kho',                    min: 40000,  max: 160000 }
@@ -261,8 +261,10 @@ const KH_NAM = ['Bảo', 'Bình', 'Cường', 'Đạt', 'Dũng', 'Duy', 'Dương
 const KH_XUNG_NU = ['Chị', 'Cô', 'Dì', 'Em', 'Bạn', 'Bác'];
 const KH_XUNG_NAM = ['Anh', 'Chú', 'Bác', 'Em', 'Bạn'];
 
-const OPEN = ['Cho', 'Bán cho', 'Làm cho', 'Cho mình', 'Cho con'];
-const ENDS = [' nha!', ' nhé!', '.', ' nghe!', ' đi bạn!', ' ơi!'];
+/* Mở lời rồi mới tới xưng hô: "Cho" + "cô" → "Cho cô…". Vì vậy ở đây
+   KHÔNG được có sẵn đại từ — "Cho mình" sẽ ghép ra "Cho mình bác dĩa chả". */
+const OPEN = ['Cho', 'Bán cho', 'Làm cho', 'Cho xin', 'Lấy cho'];
+const ENDS = [' nha!', ' nghen!', '.', ' nghe!', ' giùm nha!'];
 
 /* ---------- LỜI KHÁCH NÓI ----------
    {mon} = tên món · {kh} = tên khách                                */
@@ -272,7 +274,7 @@ const TXT = {
     'Ăn ở đây mấy năm rồi, {mon} vẫn ngon như ngày đầu',
     'Cơm dẻo mỡ hành thơm, nước mắm chua ngọt vừa miệng',
     'Quán làm nhanh mà đâu ra đó, phục vụ dễ thương nữa',
-    'Đĩa cơm đầy đặn, giá này là quá đáng tiền',
+    'Dĩa cơm đầy đặn, giá này là quá đáng tiền',
     '{mon} ở đây hơn mấy chỗ đông khách ngoài kia',
     'Ăn xong no tới chiều, mai ghé nữa',
     'Canh nóng uống vô là tỉnh cả người',
@@ -294,7 +296,7 @@ const TXT = {
     'Cũng được nhưng chờ hơi lâu',
     'Bình thường thôi, chưa có gì đặc biệt',
     'Cơm ổn mà đợi mệt',
-    'Được, mà giá hơi cao so với đĩa cơm này'
+    'Được, mà giá hơi cao so với dĩa cơm này'
   ],
   bad: [
     'Chờ quá lâu, cơm nguội hết rồi',
@@ -316,12 +318,12 @@ const TXT = {
   ],
   pricey: [
     'Cơm ngon nhưng giá cao quá',
-    'Đắt hơn mấy quán quanh đây nhiều',
+    'Mắc hơn mấy quán quanh đây nhiều',
     'Giá này thì mình phải cân nhắc lại',
     'Ngon thật nhưng ví mình không theo nổi'
   ],
   cheap: [
-    'Giá mềm mà đĩa cơm đầy, quá hời',
+    'Giá mềm mà dĩa cơm đầy, quá hời',
     'Rẻ hơn chỗ khác mà ngon hơn hẳn',
     'Giá này là thương khách rồi'
   ],
@@ -378,21 +380,21 @@ const LV_TXT = {
 const COACH = [
   { id: 'rice', t: 'Chạm nồi cơm để múc', d: 'Chạm <b>1 lần</b> là ít cơm, <b>2 lần</b> là bình thường, <b>3 lần</b> là nhiều cơm. Xem phiếu của khách để múc đúng.', at: 'com' },
   { id: 'mon', t: 'Vuốt sang khay món', d: 'Vuốt ngang trên quầy hoặc chạm vào ô <b>Khay món</b> phía dưới để đi qua khay món mặn.', at: 'mon' },
-  { id: 'pick', t: 'Chạm món khách gọi', d: 'Chạm vào món trong khay, món sẽ bay vào đĩa. Gắp sai thì vuốt đĩa xuống để làm lại.', at: 'mon' },
-  { id: 'serve', t: 'Vuốt đĩa lên để đưa khách', d: 'Xong rồi thì <b>vuốt đĩa lên</b> — hoặc bấm nút Đưa khách. Khách chờ càng ít thì càng nhiều sao.', at: 'any' }
+  { id: 'pick', t: 'Chạm món khách gọi', d: 'Chạm vào món trong khay, món sẽ bay vào dĩa. Gắp sai thì vuốt dĩa xuống để làm lại.', at: 'mon' },
+  { id: 'serve', t: 'Vuốt dĩa lên để đưa khách', d: 'Xong rồi thì <b>vuốt dĩa lên</b> — hoặc bấm nút Đưa khách. Khách chờ càng ít thì càng nhiều sao.', at: 'any' }
 ];
 
 const TOUR = [
   { i: 'rice', t: 'Cơm tấm bán từ sáng', d: 'Một ngày trong game dài 4 phút thật, từ 6 giờ sáng tới 2 giờ chiều. Sáng nào cũng phải nhập hàng và nấu cơm trước khi mở cửa.' },
-  { i: 'plate', t: 'Làm đúng phiếu khách', d: 'Mỗi khách có một phiếu: mấy muôi cơm, món mặn nào, có mỡ hành không, canh và nước gì, ăn tại quán hay mang đi. Làm đủ rồi vuốt đĩa lên là xong.' },
+  { i: 'plate', t: 'Làm đúng phiếu khách', d: 'Mỗi khách có một phiếu: mấy vá cơm, món mặn nào, có mỡ hành không, canh và nước gì, ăn tại quán hay mang đi. Làm đủ rồi vuốt dĩa lên là xong.' },
   { i: 'rain', t: 'Trời mưa trời nắng', d: 'Nắng gắt thì đông khách và bán chạy nước đá. Mưa thì vắng hơn nhưng nhiều người gọi mang đi và gọi canh nóng. Thời tiết đổi được giữa buổi.' },
-  { i: 'price', t: 'Chợ lên thì giá bán phải lên', d: 'Giá nhập ngoài chợ thay đổi mỗi ngày. Chợ đắt thì khách cũng biết và thông cảm — cứ tăng giá bán, đừng cắn lỗ.' },
+  { i: 'price', t: 'Chợ lên thì giá bán phải lên', d: 'Giá nhập ngoài chợ thay đổi mỗi ngày. Chợ mắc thì khách cũng biết và thông cảm — cứ tăng giá bán, đừng cắn lỗ.' },
   { i: 'shield', t: 'Coi chừng mất đồ', d: 'Thỉnh thoảng có người lảng vảng ở két tiền. Chạm vào họ là chặn được. Thuê anh bảo vệ thì khỏi phải để mắt nữa.' }
 ];
 
 /* ---------- CẤU HÌNH ---------- */
 const SAVE = 'ctShop1', OWNER_SAVE = 'ctOwner';
-const GAME_VERSION = '1.1';
+const GAME_VERSION = '1.2';
 
 const DEFAULT_CONFIG = {
   ownerPin: '2468',
@@ -403,10 +405,10 @@ const DEFAULT_CONFIG = {
   utilBase: 38000,            /* điện nước gas cơ bản */
   utilPerUpg: 9000,
   /* Hai trần này phải luôn CAO HƠN giá gợi ý, nếu không người chơi bị
-     khách chê đắt chỉ vì mở khoá món xịn — xem phần tự kiểm tra cuối file. */
+     khách chê mắc chỉ vì mở khoá món xịn — xem phần tự kiểm tra cuối file. */
   priceCap: 200000,           /* một phần vượt mức này thì 60% khách bỏ đi */
   itemCap: 60000,             /* một món vượt mức này: chê mắc, vắng 80% */
-  riceBase: 120,              /* số muôi cơm mỗi nồi */
+  riceBase: 120,              /* số vá cơm mỗi nồi */
   ricePerUpg: 60,
   bankMax: 1500000, bankRate: 22, hotMax: 3000000, hotRate: 45,
   lendCap: 400000,            /* cho vay tối đa mỗi lần */
@@ -429,24 +431,24 @@ try {
 function saveCfg() { try { localStorage.setItem(OWNER_SAVE, JSON.stringify(CFG)) } catch (e) { } }
 
 /* ---------- TỰ KIỂM TRA CẤU HÌNH ----------
-   Để nguyên giá gợi ý thì người chơi KHÔNG BAO GIỜ được bị chê đắt.
+   Để nguyên giá gợi ý thì người chơi KHÔNG BAO GIỜ được bị chê mắc.
    Hàm này chạy lúc khởi động và in cảnh báo ra console nếu lệch.     */
 function cfgSelfCheck() {
   const bad = [];
   Object.keys(DEF_SELL).forEach(k => {
-    if (DEF_SELL[k] > CFG.itemCap) bad.push(`giá gợi ý ${k} (${DEF_SELL[k]}) vượt trần chê đắt itemCap (${CFG.itemCap})`);
-    /* Giá do game gợi ý theo chợ cũng không được vượt trần chê đắt —
+    if (DEF_SELL[k] > CFG.itemCap) bad.push(`giá gợi ý ${k} (${DEF_SELL[k]}) vượt trần chê mắc itemCap (${CFG.itemCap})`);
+    /* Giá do game gợi ý theo chợ cũng không được vượt trần chê mắc —
        nếu vượt thì bấm nút "Theo chợ" là tự tay làm 80% khách bỏ đi. */
     if (typeof suggest === 'function' && suggest(k) > capOf()) {
-      bad.push(`giá theo chợ của ${k} (${suggest(k)}) vượt trần chê đắt hôm nay (${capOf()})`);
+      bad.push(`giá theo chợ của ${k} (${suggest(k)}) vượt trần chê mắc hôm nay (${capOf()})`);
     }
   });
-  /* phần đắt nhất có thể gọi ở cấp 4: cơm nhiều + 3 món đắt nhất + canh + nước đắt nhất + mỡ hành */
+  /* phần mắc nhất có thể gọi ở cấp 4: cơm nhiều + 3 món mắc nhất + canh + nước mắc nhất + mỡ hành */
   const top3 = MAIN_KEYS.map(k => DEF_SELL[k]).sort((a, b) => b - a).slice(0, 3).reduce((a, b) => a + b, 0);
   const worst = DEF_SELL.com3 + top3
     + Math.max(...CANH_KEYS.map(k => DEF_SELL[k]))
     + Math.max(...DRINK_KEYS.map(k => DEF_SELL[k])) + DEF_SELL.mohanh;
-  if (worst > CFG.priceCap) bad.push(`phần đắt nhất theo giá gợi ý (${worst}) vượt priceCap (${CFG.priceCap})`);
+  if (worst > CFG.priceCap) bad.push(`phần mắc nhất theo giá gợi ý (${worst}) vượt priceCap (${CFG.priceCap})`);
 
   MAIN_KEYS.concat(CANH_KEYS, DRINK_KEYS, ['mohanh']).forEach(k => {
     if (DEF_SELL[k] <= CFG.cost[k]) bad.push(`giá gợi ý ${k} không đủ bù giá nhập`);
