@@ -374,6 +374,7 @@ luôn nằm trong tầm nhìn.
 | `vercel.json` đặt `max-age=3600` cho `css/` và `js/`, nên **người đã vào game giữ bản cũ tới một tiếng sau mỗi lần deploy** | Deploy báo thành công, file trên server đúng, mà người thử mở lại vẫn thấy y như cũ rồi kết luận là chưa sửa gì. Mất nguyên một vòng phản hồi mới phát hiện. Đã đổi sang `no-cache` — vẫn nằm trong cache nhưng phải hỏi lại server mỗi lần, và server trả 304 nên gần như không tốn gì |
 | `suggest()` — giá bán do **chính game** gợi ý theo chợ — có thể vượt trần chê mắc khi một món sốt giá riêng lẻ (chợ chung vẫn bình thường nên trần không nới theo). Bấm nút "Theo chợ" là tự tay làm 80% khách bỏ đi | Không có lỗi, không có cảnh báo, chỉ thấy khách vắng hẳn sau khi bấm một nút mà game khuyên bấm. Đã kẹp `suggest()` dưới `capOf()` và thêm phép thử trong `cfgSelfCheck()` |
 | Vòng xoáy phá sản: mở khoá món mới ngốn hết vốn nhập hàng, mà mở thêm món còn làm khách tản ra nhiều món hơn nên cùng số hàng lại hết lẻ tẻ. Ít hàng → ít khách → ít tiền → càng ít hàng, bốn ngày là dẹp quán | Mỗi bước đều hợp lý, không có lỗi nào. Chỉ `dev/sim.js` chạy nhiều lần mới lộ ra: `sold` tụt về 0 mà `lost` cũng 0 — dấu hiệu quán không có gì để bán, chứ không phải khách bỏ đi. Đã thêm cảnh báo khi mở khoá ăn vào vốn lưu động |
+| **Lớp nền trắng gần đục phủ lên toàn bộ khu quầy** làm cả màn hình đọc thành biểu mẫu, dù phía sau đã vẽ tường, bảng menu và quạt trần | Không phải lỗi chức năng nên không có gì báo. Và nó dẫn tới chẩn đoán sai: vòng sửa đầu đi đổi hình món với thêm bóng thoại — đúng nhưng vô ích, vì cái khung bao quanh vẫn là thẻ trắng. Người thử xem lại và nói "không thấy khác gì". Bài học: **lớp nền quyết định ấn tượng, sửa nó trước khi sửa chi tiết** |
 | Nút "Đưa khách" trôi khỏi màn hình ở máy 375×667 | Ở khổ 430×900 vừa khít nên không thấy gì; máy nhỏ hơn thì phải cuộn mới bấm được thứ bấm nhiều nhất |
 
 ---
@@ -385,7 +386,7 @@ luôn nằm trong tầm nhìn.
 3. Mở console xem có cảnh báo `[cấu hình]` không
 4. Thêm/xoá món → kiểm `ITEM_ART` (art.js), `FAM_NEAR` và `STOCK_KEYS` (data.js);
    `cfgSelfCheck()` sẽ báo nếu thiếu
-5. **Đặt tên class mới thì tra trước xem đã có chưa** — bốn trong bảy bug ở mục 9
+5. **Đặt tên class mới thì tra trước xem đã có chưa** — bốn trong mười hai bug ở mục 9
    là trùng tên class
 6. Sửa file tĩnh → tăng số phiên bản ở **ba chỗ**, nếu không người đã từng
    vào game sẽ tiếp tục chạy bản cũ:
