@@ -986,6 +986,7 @@ function stageCom() {
     <div class="sthead">${ic('rice')} Nồi cơm${lv2 ? ' + mỡ hành' : ''} <em>còn ${left} vá</em></div>
     <div class="ricearea">
       <button class="pot${left <= 0 ? ' out' : ''}" id="ricePot" ${left <= 0 ? 'disabled' : ''}>
+        ${left > 0 ? steamSVG(3) : ''}
         <span class="potart">${itemArt('com', 74)}</span>
         <b>Chạm để múc</b>
         <em>${tray.rice ? riceOf(tray.rice).s + ' — ' + tray.rice + ' vá' : 'chưa có cơm'}</em>
@@ -1048,7 +1049,7 @@ function stageCanh() {
     const out = off(k), sel = tray.canh === k;
     const c = focusCust(), want = c && c.order && c.order.canh === k;
     return `<button class="dish${sel ? ' on' : ''}${out ? ' out' : ''}${want && !sel ? ' want' : ''}" data-tapk="${k}" ${out ? 'disabled' : ''}>
-        ${itemArt(k, 56)}<b>${ITEMS[k].s}</b><em>${out ? 'hết' : 'còn ' + qty(k)}</em>
+        ${out ? '' : steamSVG(2)}${itemArt(k, 56)}<b>${ITEMS[k].s}</b><em>${out ? 'hết' : 'còn ' + qty(k)}</em>
         ${want && !sel ? '<span class="wantdot"></span>' : ''}</button>`;
   }).join('')}</div>
     ${ks.filter(off).length ? `<div class="hint warn">${ic('warn')} Hết canh.

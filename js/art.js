@@ -546,29 +546,66 @@ function thiefSVG() {
    Lớp sau (tường, bảng menu) đứng yên, lớp giữa (quầy kính) nhận
    thao tác, lớp trước (dĩa) nổi lên trên cùng.
    ============================================================ */
+/* Dải tường phía sau quầy. Cố ý CHỈ vẽ phần tường: mặt quầy để CSS lo,
+   nhờ vậy vạch inox luôn nằm đúng mép trên của khu đồ nghề dù khu đó
+   cao thấp thế nào. Trước đây vẽ cả cảnh vào một SVG rồi kéo giãn nên
+   mặt quầy chạy lung tung mỗi khi đổi khu.                            */
 function shopBackSVG() {
-  return `<svg class="scene-back" viewBox="0 0 400 180" preserveAspectRatio="none" aria-hidden="true">
-    <rect width="400" height="180" fill="#f7e9d2"/>
-    <path d="M0 0h400v16H0z" fill="#e8d3b2"/>
-    ${[40, 120, 200, 280, 360].map(x => `<rect x="${x}" y="16" width="2" height="164" fill="#efdcc0"/>`).join('')}
+  return `<svg class="scene-back" viewBox="0 0 400 62" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#dcd0b5"/><stop offset="1" stop-color="#efe6d2"/>
+      </linearGradient>
+      <radialGradient id="bulbglow" cx=".5" cy=".5" r=".5">
+        <stop offset="0" stop-color="#ffdf9a" stop-opacity=".9"/>
+        <stop offset="1" stop-color="#ffdf9a" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+
+    <rect width="400" height="62" fill="url(#wall)"/>
+    <g opacity=".45" stroke="#cdbd9c" stroke-width="1.4">
+      <path d="M0 22h400M0 46h400"/>
+      ${[0, 1, 2, 3, 4, 5, 6, 7].map(c => `<path d="M${c * 52 + 10} 0v62"/>`).join('')}
+    </g>
+
     <g class="fan">
-      <circle cx="200" cy="10" r="4" fill="#c7b193"/>
-      <ellipse cx="200" cy="10" rx="46" ry="5" fill="#d9c5a6" opacity=".9"/>
-      <ellipse cx="200" cy="10" rx="5" ry="30" fill="#d9c5a6" opacity=".5"/>
+      <ellipse cx="150" cy="6" rx="42" ry="4.5" fill="#bfae90" opacity=".9"/>
+      <ellipse cx="150" cy="6" rx="5" ry="26" fill="#bfae90" opacity=".5"/>
+      <circle cx="150" cy="6" r="4" fill="#9a886b"/>
     </g>
+
+    <g class="bulb">
+      <path d="M356 0v14" stroke="#8b7a60" stroke-width="1.8"/>
+      <circle cx="356" cy="24" r="22" fill="url(#bulbglow)"/>
+      <path d="M351 13h10l-1.6 6h-6.8z" fill="#9aa2a8"/>
+      <ellipse cx="356" cy="25" rx="7" ry="8" fill="#ffe9ae" stroke="#e0c377" stroke-width="1.2"/>
+    </g>
+
     <g>
-      <rect x="248" y="30" width="136" height="86" rx="6" fill="#fffaf0" stroke="#d9c09a" stroke-width="3"/>
-      <path d="M258 46h116M258 60h96M258 74h108M258 88h84M258 102h64" stroke="#e5d3b6" stroke-width="5" stroke-linecap="round"/>
-      <rect x="264" y="20" width="104" height="14" rx="7" fill="#e07a5f"/>
+      <rect x="10" y="8" width="112" height="46" rx="4" fill="#bd4230" stroke="#8e2f1f" stroke-width="2.5"/>
+      <rect x="15" y="13" width="102" height="36" rx="2" fill="none" stroke="#e8a293" stroke-width="1.3" opacity=".7"/>
+      <text x="66" y="32" text-anchor="middle" font-family="Baloo 2, sans-serif" font-size="17"
+        font-weight="800" fill="#fff6e8" letter-spacing=".5">CƠM TẤM</text>
+      <text x="66" y="44" text-anchor="middle" font-family="Baloo 2, sans-serif" font-size="8.5"
+        fill="#f7d3c6" letter-spacing="2">SƯỜN BÌ CHẢ</text>
     </g>
+
     <g>
-      <rect x="20" y="44" width="80" height="58" rx="5" fill="#fdf3e2" stroke="#d9c09a" stroke-width="3"/>
-      <circle cx="60" cy="66" r="12" fill="#f4c95d"/>
-      <path d="M32 88h56" stroke="#e5d3b6" stroke-width="6" stroke-linecap="round"/>
+      <rect x="196" y="46" width="128" height="6" rx="2" fill="#a07341"/>
+      ${[[206, 24], [226, 20], [244, 26], [264, 18], [282, 23], [300, 21]].map(([x, h], i) =>
+        `<rect x="${x}" y="${46 - h}" width="12" height="${h}" rx="2.5"
+          fill="${['#d8c9a8', '#c9a86a', '#dcd2bb', '#c08f56', '#d3c4a0', '#b9884f'][i]}"
+          stroke="#a68f66" stroke-width=".9"/>
+         <rect x="${x}" y="${46 - h}" width="12" height="3.5" rx="1.8" fill="#8d7752"/>`).join('')}
     </g>
-    <rect x="126" y="60" width="90" height="46" rx="4" fill="#f2e0c4" stroke="#dcc39e" stroke-width="2.4"/>
-    <path d="M136 74h70M136 86h52" stroke="#e0caa6" stroke-width="5" stroke-linecap="round"/>
   </svg>`;
+}
+
+/* Khói bốc lên — dùng cho nồi cơm, nồi canh và khay món còn nóng.
+   Chuyển động rất chậm, cốt để khung hình không đứng chết. */
+function steamSVG(n) {
+  return `<span class="steam" aria-hidden="true">${Array.from({ length: n || 3 }, (_, i) =>
+    `<i style="--d:${(i * .9).toFixed(1)}s;--x:${(i - 1) * 7}px"></i>`).join('')}</span>`;
 }
 
 /* ============================================================

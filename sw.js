@@ -15,17 +15,17 @@
    thì việc ghi đè mới thực sự thay được bản cũ.
    ============================================================ */
 
-const VERSION = 'v1.2.2';
+const VERSION = 'v1.3.0';
 const CACHE = 'com-tam-' + VERSION;
 
 /* những file tối thiểu để game chạy được khi mất mạng */
 const SHELL_FILES = [
   './',
   './index.html',
-  './css/style.css?v=1.2',
-  './js/art.js?v=1.2',
-  './js/data.js?v=1.2',
-  './js/game.js?v=1.2',
+  './css/style.css?v=1.3',
+  './js/art.js?v=1.3',
+  './js/data.js?v=1.3',
+  './js/game.js?v=1.3',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',

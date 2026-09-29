@@ -330,6 +330,18 @@ thì đọc lại một lượt theo danh sách này.
 **Service worker dùng ĐÚNG MỘT cache, và HTML network-first.** Cache-first sẽ
 làm người chơi kẹt bản cũ vĩnh viễn.
 
+**Không phủ tấm kính trắng lên khu đồ nghề.** Bản đầu đặt một lớp nền trắng
+gần đục lên toàn bộ khu quầy, nên dù phía sau vẽ gì thì nhìn ra vẫn là một cái
+thẻ trắng — cả màn hình đọc thành biểu mẫu chứ không ra cái quán. Giờ đồ nghề
+nằm thẳng trên mặt quầy gỗ: món mặn trong khay inox có vành sáng và nhãn men
+trắng, cơm trong nồi nhôm, tên khu trên biển gỗ sơn chữ, khách đứng trên vỉa hè
+lát gạch. Nền tường tách riêng thành một dải cao cố định 46px chứ không kéo giãn
+theo khung, để vạch inox luôn nằm đúng mép trên của khu đồ nghề.
+
+**Khung hình phải có thứ gì đó động.** Quạt trần quay, bóng đèn đung đưa, khói
+bốc lên từ nồi cơm và nồi canh. Không cái nào là thông tin cả — chúng chỉ để
+màn hình đừng đứng chết, thứ khiến người ta gọi game là "một cỗ máy".
+
 **Từ chối cho vay không bị phạt nặng.** Nếu từ chối là mất khách thì đó không
 còn là lựa chọn.
 

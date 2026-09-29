@@ -293,13 +293,20 @@ button:disabled { opacity: .45; cursor: default; }
 
 /* ---------- hàng khách ---------- */
 .lane {
-  display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;
+  display: flex; gap: 6px; overflow-x: auto; padding: 6px 6px 8px;
   scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  /* Vỉa hè trước quán: gạch lát, có gờ bó vỉa. Trước đây khách là một dãy
+     thẻ trắng trôi trên nền kem, không ăn nhập gì với cái quán bên dưới. */
+  border-radius: 14px; border: 2px solid #c3b295;
+  background:
+    repeating-linear-gradient(90deg, rgba(120, 105, 85, .1) 0 1px, transparent 1px 34px),
+    linear-gradient(180deg, #e8ddc6 0 34%, #d6cbb4 34% 38%, #cfc5ae 38% 100%);
+  box-shadow: inset 0 6px 12px rgba(80, 60, 35, .14);
 }
 .lane::-webkit-scrollbar { display: none; }
 .seat {
-  flex: 0 0 132px; min-height: 118px; border: 2px dashed var(--line2); border-radius: 16px;
-  display: flex; align-items: center; justify-content: center; background: #fdf7ea;
+  flex: 0 0 132px; min-height: 100px; border: 2px dashed rgba(140, 120, 90, .5); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; background: rgba(255, 253, 245, .35);
 }
 .seat i {
   font-style: normal; display: flex; flex-direction: column; align-items: center; gap: 3px;
@@ -308,9 +315,10 @@ button:disabled { opacity: .45; cursor: default; }
 .seat .ic { width: 24px; height: 24px; }
 
 .cust {
-  flex: 0 0 168px; background: var(--panel); border: 2px solid var(--line);
-  border-radius: 16px; padding: 6px 7px 5px; touch-action: pan-x;
-  box-shadow: 0 2px 0 rgba(160, 130, 100, .1);
+  flex: 0 0 168px; background: rgba(255, 253, 245, .93); border: 2px solid #bda887;
+  border-radius: 12px; padding: 6px 7px 5px; touch-action: pan-x;
+  /* bóng hắt xuống làm người có vẻ đang đứng trên vỉa hè, không phải thẻ trôi */
+  box-shadow: 0 4px 7px rgba(70, 50, 25, .22);
 }
 .cust.on { border-color: var(--terra); box-shadow: 0 0 0 3px rgba(224, 122, 95, .16); }
 .cust.stuck { background: #fdf3ef; border-color: #eec2b6; }
@@ -352,27 +360,40 @@ button:disabled { opacity: .45; cursor: default; }
 .patbar { height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; }
 .patbar div { height: 100%; transition: width .25s linear; }
 
-/* ---------- LỚP SAU + LỚP GIỮA: cảnh quán và quầy kính ---------- */
+/* ---------- LỚP SAU + LỚP GIỮA: cảnh quán và quầy ----------
+   Bản trước phủ một tấm kính trắng gần đục lên toàn bộ khu này, nên dù
+   phía sau có vẽ gì thì nhìn ra vẫn là một cái thẻ trắng — cả màn hình
+   đọc thành biểu mẫu chứ không ra cái quán. Giờ bỏ tấm kính đó: đồ nghề
+   nằm thẳng trên mặt quầy inox, sau lưng là tường gạch, bảng hiệu, bóng
+   đèn và quạt trần.                                                    */
 .scene {
-  position: relative; margin: 7px 0 0; border-radius: 18px; overflow: hidden;
-  border: 2px solid var(--line2);
-  box-shadow: inset 0 8px 20px rgba(140, 100, 60, .12), 0 3px 0 rgba(160, 130, 100, .12);
+  position: relative; margin: 7px 0 0; border-radius: 16px; overflow: hidden;
+  border: 2px solid #9c7a4e;
   touch-action: pan-y;
-  min-height: 224px;
+  min-height: 200px;
+  /* mặt quầy gỗ: vân dọc mảnh chồng lên chuyển màu nâu */
+  background:
+    repeating-linear-gradient(90deg, rgba(122, 86, 46, .16) 0 2px, transparent 2px 64px),
+    linear-gradient(180deg, #b98b52 0%, #a4763f 40%, #8d6437 100%);
+  box-shadow: inset 0 14px 22px rgba(60, 35, 12, .28), 0 3px 0 rgba(120, 85, 45, .3);
 }
-.scene-back { position: absolute; inset: 0; width: 100%; height: 100%; }
-.fan { transform-origin: 200px 10px; animation: fan 2.6s linear infinite; }
+/* dải tường: cao cố định, luôn nằm sát mép trên */
+.scene-back { position: absolute; left: 0; right: 0; top: 0; width: 100%; height: 46px; }
+.fan { transform-origin: 196px 12px; animation: fan 2.4s linear infinite; }
 @keyframes fan { to { transform: rotate(360deg); } }
+.bulb { transform-origin: 338px 0; animation: sway 5.5s ease-in-out infinite; }
+@keyframes sway {
+  0%, 100% { transform: rotate(-2.2deg); }
+  50% { transform: rotate(2.2deg); }
+}
 
-.stage { position: relative; z-index: 2; padding: 12px 11px 12px; }
+/* Mặt quầy: dải inox mỏng ở trên rồi tới mặt thớt gỗ. Đồ nghề đặt lên đây. */
+.stage { position: relative; z-index: 2; padding: 54px 10px 10px; }
 .stage::before {
-  /* Mặt kính quầy. Cố ý chỉ mờ chứ không đục: phải còn thấy tường và
-     bảng menu ở lớp sau, nếu không thì cảnh quán mất hết chiều sâu. */
-  content: ''; position: absolute; inset: 6px; border-radius: 13px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, .58), rgba(255, 252, 244, .9));
-  border: 2px solid rgba(226, 202, 166, .85);
-  box-shadow: 0 8px 20px rgba(140, 100, 60, .18), inset 0 1px 0 #fff;
-  backdrop-filter: blur(1.5px);
+  /* mép inox của mặt quầy, ngay dưới chân tường */
+  content: ''; position: absolute; left: 0; right: 0; top: 46px; height: 6px;
+  background: linear-gradient(180deg, #f2f6f8, #a8b4bd);
+  box-shadow: 0 3px 6px rgba(40, 25, 10, .38);
 }
 .stpanel { position: relative; z-index: 1; }
 .stpanel.in-l { animation: slideL .26s cubic-bezier(.22, .9, .3, 1); }
@@ -386,81 +407,132 @@ button:disabled { opacity: .45; cursor: default; }
   to { transform: translateX(0); opacity: 1; }
 }
 
-.sthead {
-  display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 800;
-  padding: 2px 4px 7px; color: #6d5a49;
+/* ---------- khói ---------- */
+.steam { position: absolute; left: 50%; top: -2px; width: 0; height: 0; pointer-events: none; }
+.steam i {
+  position: absolute; left: var(--x, 0); bottom: 0;
+  width: 5px; height: 5px; border-radius: 50%;
+  background: #fff; opacity: 0;
+  animation: steamUp 3.4s ease-out infinite; animation-delay: var(--d, 0s);
 }
-.sthead em { font-style: normal; font-size: 11px; color: var(--soft); font-weight: 600; margin-left: auto; }
-.sthead .ic { width: 18px; height: 18px; color: var(--terra); }
-.stnote {
-  display: block; font-style: normal; font-size: 10.5px; color: var(--soft);
-  line-height: 1.4; padding: 6px 4px 0;
+@keyframes steamUp {
+  0% { opacity: 0; transform: translateY(0) scale(.5); }
+  18% { opacity: .55; }
+  100% { opacity: 0; transform: translateY(-26px) scale(2.3); }
 }
 
-/* nồi cơm */
+/* Bảng tên khu: tấm gỗ nhỏ sơn chữ, kiểu biển viết tay treo ở quán. */
+.sthead {
+  display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 800;
+  color: #fff3dd; margin-bottom: 8px; padding: 4px 10px; border-radius: 5px;
+  background: linear-gradient(180deg, #8a5f34, #6d4824);
+  box-shadow: inset 0 1px 0 rgba(255, 233, 200, .35), 0 2px 4px rgba(40, 25, 10, .35);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .3);
+}
+.sthead em {
+  font-style: normal; font-size: 11px; color: #f0d6ad; font-weight: 600; margin-left: auto;
+}
+.sthead .ic { width: 17px; height: 17px; color: #f4c95d; }
+.stnote {
+  display: block; font-style: normal; font-size: 10.5px; color: #f3e3c6;
+  line-height: 1.4; padding: 6px 4px 0; text-shadow: 0 1px 2px rgba(40, 25, 10, .6);
+}
+
+/* ---------- nồi cơm ---------- */
 .ricearea { display: flex; gap: 9px; align-items: stretch; }
 .pot {
-  flex: 0 0 132px; display: flex; flex-direction: column; align-items: center; gap: 1px;
-  background: linear-gradient(180deg, #fffdf7, #fbf1de);
-  border: 2px solid var(--line2); border-radius: 16px; padding: 7px 4px 8px;
-  box-shadow: 0 3px 0 rgba(160, 130, 100, .18);
+  position: relative; flex: 0 0 132px;
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  padding: 7px 4px 8px;
+  /* nồi nhôm: vành sáng trên, thân tối dần xuống đáy */
+  background: linear-gradient(180deg, #f3f6f8 0%, #dbe3e8 18%, #b9c5ce 60%, #93a2ad 100%);
+  border: 2px solid #7f8f9b; border-radius: 10px 10px 16px 16px;
+  box-shadow: inset 0 2px 0 #fff, inset 0 -6px 12px rgba(30, 45, 60, .3), 0 3px 4px rgba(40, 25, 10, .35);
   transition: transform .09s;
 }
+.pot::before {
+  /* vành nồi */
+  content: ''; position: absolute; left: 6px; right: 6px; top: 4px; height: 5px;
+  border-radius: 4px; background: linear-gradient(180deg, #fbfdfe, #aebac4);
+}
 .pot:active { transform: scale(.96) translateY(2px); }
-.pot.out { opacity: .5; }
-.potart { display: block; line-height: 0; }
-.pot b { font-size: 12.5px; }
-.pot em { font-style: normal; font-size: 11px; color: var(--terra); font-weight: 800; }
+.pot.out { filter: grayscale(.5); opacity: .55; }
+.potart { display: block; line-height: 0; margin-top: 4px; }
+.pot b { font-size: 12.5px; color: #33424d; }
+.pot em { font-style: normal; font-size: 11px; color: #8a4b1e; font-weight: 800; }
+
 .ricehelp { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+/* ba nấc cơm: thanh gỗ mỏng gắn trên thành quầy */
 .rh {
   position: relative; flex: 1; display: flex; align-items: center; gap: 6px; padding: 3px 7px;
-  border: 2px solid var(--line); border-radius: 12px; background: var(--panel2); font-size: 11.5px;
-  text-align: left; font-family: inherit; min-height: 27px;
+  border: 2px solid #9d7c52; border-radius: 6px; font-size: 11px;
+  background: linear-gradient(180deg, #f6ead2, #e6d3b0);
+  color: #5c3f21; text-align: left; font-family: inherit; min-height: 27px;
+  box-shadow: 0 1px 2px rgba(40, 25, 10, .25);
 }
-/* Chén mỡ hành dùng chung dáng hàng với ba mức cơm — cùng một khu, cùng
-   một người làm. Khác ở chỗ nó bấm được. */
-.rh.mhrh { background: var(--panel); }
+.rh.mhrh { background: linear-gradient(180deg, #fdf6e6, #efe0c2); }
 .rh.mhrh .ia { flex: none; }
-.rh.mhrh em { color: var(--soft); }
+.rh.mhrh em { color: #7c6242; }
 .rh.mhrh:active { transform: scale(.98); }
 .rh.out { opacity: .5; }
 .rh.out em { color: var(--warn); }
-.rh b { flex: none; font-size: 12px; color: var(--soft); }
+.rh b { flex: none; font-size: 12px; color: #7a5b35; }
 .rh span { flex: 1; }
-.rh.on { background: #f2f8ee; border-color: var(--onion); }
+.rh.on { background: linear-gradient(180deg, #e7f3dd, #cfe6bd); border-color: #6f9a5c; }
 .rh.on b { color: var(--onion-d); }
-.rh.want { border-color: var(--terra); background: #fdefe9; }
+.rh.want { border-color: #d0552f; background: linear-gradient(180deg, #fde9dd, #f7d3bd); }
 .rh em {
   font-style: normal; display: flex; align-items: center; gap: 2px;
-  font-size: 10px; color: var(--terra); font-weight: 800;
+  font-size: 10px; color: #c0512c; font-weight: 800;
 }
 .rh .ic { width: 12px; height: 12px; }
 
-/* khay món */
-.dishes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+/* ---------- KHAY MÓN: từng khay inox nằm trong tủ kính ----------
+   Đây là chỗ đổi nhiều nhất. Trước kia là ô trắng bo tròn — trông y hệt
+   một nút bấm. Giờ là khay thép có vành sáng, lòng khay tối, đổ bóng
+   xuống mặt quầy, và tên món nằm trên miếng nhãn men trắng dán ngoài. */
+/* Năm khay một hàng — quầy cơm tấm thật cũng xếp khay dài như vậy, và
+   nhờ đó chín món vừa hai hàng thay vì ba, đủ chỗ cho cái dĩa bên dưới. */
+.dishes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
 .dishes.pair { grid-template-columns: repeat(2, 1fr); gap: 8px; }
 .dish {
-  position: relative; display: flex; flex-direction: column; align-items: center; gap: 0;
-  padding: 4px 2px 3px; background: linear-gradient(180deg, #fffdf7, #fbf3e4);
-  border: 2px solid var(--line); border-radius: 13px; line-height: 1.15;
+  position: relative; display: flex; flex-direction: column; align-items: center;
+  padding: 4px 2px 3px; line-height: 1.12;
+  background: linear-gradient(180deg, #f4f7f9 0%, #e2e9ee 30%, #cad4dc 75%, #b3c0c9 100%);
+  border: 2px solid #90a0ab; border-radius: 7px;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .95), inset 0 -5px 9px rgba(30, 45, 60, .18),
+              0 3px 4px rgba(40, 25, 10, .32);
   transition: transform .08s, box-shadow .08s;
-  box-shadow: 0 2px 0 rgba(160, 130, 100, .14);
 }
-.dish:active { transform: translateY(2px) scale(.97); box-shadow: none; }
-.dish b { font-size: 10.5px; }
-.dish .ia { width: 40px; height: 40px; }
-.dish em { font-style: normal; font-size: 9.5px; color: var(--soft); }
-.dish.on { border-color: var(--onion); background: #f4f9f0; }
-.dish.out { opacity: .42; filter: grayscale(.6); }
+.dish::before {
+  /* vệt sáng chạy ngang mặt khay, thứ làm thép ra thép */
+  content: ''; position: absolute; left: 4px; right: 4px; top: 3px; height: 40%;
+  border-radius: 5px; background: linear-gradient(180deg, rgba(255, 255, 255, .55), transparent);
+  pointer-events: none;
+}
+.dish:active { transform: translateY(2px) scale(.97); box-shadow: inset 0 2px 0 rgba(255,255,255,.7); }
+.dish .ia { width: 32px; height: 32px; position: relative; z-index: 1;
+  filter: drop-shadow(0 2px 2px rgba(30, 20, 10, .3)); }
+/* tên món: miếng nhãn men trắng */
+.dish b {
+  position: relative; z-index: 1; font-size: 9px; color: #3d3026;
+  background: #fffdf6; border: 1px solid #cdbfa6; border-radius: 3px;
+  padding: 0 4px; margin-top: 1px; max-width: 100%; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.dish em { font-style: normal; font-size: 9px; color: #4e5a63; font-weight: 700; }
+.dish.on { border-color: #d19b2e; box-shadow: inset 0 2px 0 rgba(255,255,255,.95), 0 0 0 2px rgba(209,155,46,.45), 0 3px 4px rgba(40,25,10,.32); }
+.dish.out { filter: grayscale(.85); opacity: .5; }
 .dish.out em { color: var(--warn); font-weight: 800; }
-.dish.want { border-color: var(--terra); box-shadow: 0 0 0 3px rgba(224, 122, 95, .15); }
+.dish.want { border-color: #d0552f; box-shadow: inset 0 2px 0 rgba(255,255,255,.9), 0 0 0 3px rgba(208,85,47,.35), 0 3px 4px rgba(40,25,10,.32); }
 .badge {
-  position: absolute; top: -5px; right: -4px; min-width: 18px; height: 18px;
-  background: var(--onion-d); color: #fff; border-radius: 99px;
+  position: absolute; top: -6px; right: -5px; min-width: 18px; height: 18px;
+  background: #c0442f; color: #fff; border: 1.5px solid #fff3dd; border-radius: 99px;
   font-size: 11px; display: flex; align-items: center; justify-content: center; padding: 0 4px;
+  box-shadow: 0 1px 3px rgba(40, 25, 10, .5); z-index: 2;
 }
 .wantdot {
-  position: absolute; top: -4px; left: -4px; width: 10px; height: 10px;
+  position: absolute; top: -4px; left: -4px; width: 10px; height: 10px; z-index: 2;
   background: var(--terra); border-radius: 50%; animation: pulse 1.1s ease-in-out infinite;
 }
 @keyframes pulse {
@@ -482,14 +554,16 @@ button:disabled { opacity: .45; cursor: default; }
 /* ---------- thanh chọn khu ---------- */
 .stbar {
   display: flex; gap: 3px; margin: 7px 0 0;
-  background: var(--panel2); padding: 3px; border-radius: 16px; border: 2px solid var(--line);
+  padding: 3px; border-radius: 14px; border: 2px solid #b79c74;
+  background: linear-gradient(180deg, #f3e6cd, #e6d5b5);
+  box-shadow: inset 0 1px 0 rgba(255, 250, 235, .8);
 }
 .stb {
   position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0;
-  padding: 6px 1px; background: transparent; border-radius: 13px; font-size: 10px; color: var(--soft);
+  padding: 6px 1px; background: transparent; border-radius: 11px; font-size: 10px; color: #7a6244;
 }
 .stb .ic { width: 18px; height: 18px; }
-.stb.on { background: var(--panel); color: var(--ink); box-shadow: 0 2px 6px rgba(140, 100, 60, .14); }
+.stb.on { background: #fffdf6; color: var(--ink); box-shadow: 0 2px 5px rgba(90, 65, 35, .3); }
 .stb .dot {
   position: absolute; top: 3px; right: 8px; width: 7px; height: 7px;
   background: var(--terra); border-radius: 50%; animation: pulse 1.2s ease-in-out infinite;
@@ -541,12 +615,15 @@ button:disabled { opacity: .45; cursor: default; }
 
 .plateBox {
   position: relative; margin-top: -2px;
-  background: linear-gradient(180deg, #fdf3e2, #f7e7cc);
-  border: 2px solid var(--line2); border-top: 0; border-radius: 0 0 18px 18px;
-  padding: 2px 10px 6px; touch-action: none;
-  box-shadow: inset 0 -10px 18px rgba(170, 130, 90, .1);
+  /* thớt gỗ: dĩa nằm trên mặt gỗ chứ không lửng lơ trên nền kem */
+  background:
+    repeating-linear-gradient(90deg, rgba(110, 76, 38, .13) 0 2px, transparent 2px 46px),
+    linear-gradient(180deg, #c99a60 0%, #b8874b 55%, #a2733c 100%);
+  border: 2px solid #8d6437; border-top: 0; border-radius: 0 0 16px 16px;
+  padding: 4px 10px 8px; touch-action: none;
+  box-shadow: inset 0 8px 16px rgba(60, 35, 12, .25);
 }
-.plate { display: block; width: 100%; max-height: 126px; }
+.plate { display: block; width: 100%; max-height: 118px; filter: drop-shadow(0 4px 5px rgba(50, 28, 8, .4)); }
 .plate.togo { filter: drop-shadow(0 2px 3px rgba(150, 110, 70, .2)); }
 .pl-i { animation: plIn .34s cubic-bezier(.2, 1.5, .4, 1) backwards; animation-delay: calc(var(--i) * 0ms); }
 @keyframes plIn {
@@ -554,8 +631,9 @@ button:disabled { opacity: .45; cursor: default; }
   to { opacity: 1; }
 }
 .pval {
-  position: absolute; right: 12px; top: 6px; font-size: 11.5px; font-weight: 800; color: var(--soft);
-  background: rgba(255, 253, 247, .85); border-radius: 9px; padding: 2px 8px;
+  position: absolute; right: 12px; top: 7px; font-size: 11.5px; font-weight: 800; color: #5c4029;
+  background: rgba(255, 250, 238, .92); border: 1px solid #8d6437;
+  border-radius: 9px; padding: 1px 8px;
 }
 .platebtns { display: flex; gap: 7px; margin-top: 6px; align-items: stretch; }
 .platebtns .sbtn { flex: 0 0 auto; display: flex; align-items: center; gap: 4px; font-size: 12.5px; }
@@ -827,6 +905,7 @@ button:disabled { opacity: .45; cursor: default; }
 /* ---------- màn hình HẸP ---------- */
 @media (max-width: 380px) {
   .tab { font-size: 9.5px; }
+  .dishes { grid-template-columns: repeat(4, 1fr); }
   .cust { flex-basis: 152px; }
   .pot { flex-basis: 112px; }
   .dishes { grid-template-columns: repeat(3, 1fr); }
