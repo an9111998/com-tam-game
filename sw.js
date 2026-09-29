@@ -15,7 +15,7 @@
    thì việc ghi đè mới thực sự thay được bản cũ.
    ============================================================ */
 
-const VERSION = 'v1.2.0';
+const VERSION = 'v1.2.1';
 const CACHE = 'com-tam-' + VERSION;
 
 /* những file tối thiểu để game chạy được khi mất mạng */
