@@ -375,7 +375,15 @@ luôn nằm trong tầm nhìn.
    `cfgSelfCheck()` sẽ báo nếu thiếu
 5. **Đặt tên class mới thì tra trước xem đã có chưa** — bốn trong bảy bug ở mục 9
    là trùng tên class
-6. Sửa file tĩnh → tăng `VERSION` trong `sw.js` rồi deploy lại
+6. Sửa file tĩnh → tăng số phiên bản ở **ba chỗ**, nếu không người đã từng
+   vào game sẽ tiếp tục chạy bản cũ:
+   - `index.html` — đuôi `?v=` của `style.css`, `art.js`, `data.js`, `game.js`
+   - `sw.js` — `VERSION` và bốn đường dẫn trong `SHELL_FILES`
+   - `js/data.js` — `GAME_VERSION`
+
+   Đuôi `?v=` mới là thứ vô hiệu hoá cache **ngay lập tức**: đổi đường dẫn thì
+   trình duyệt buộc phải tải lại. Riêng header `no-cache` chỉ có tác dụng từ
+   lần tải sau, nên bản đã nằm sẵn trong máy người chơi vẫn được dùng tiếp.
 7. Xem lại ở khổ **430×900** (điện thoại), không phải desktop
 
 ---
